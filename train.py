@@ -49,6 +49,7 @@ def main(config):
 
 
 if __name__ == '__main__':
+    a = 1
     args = argparse.ArgumentParser(description='PyTorch Template')
     args.add_argument('-c', '--config', default=None, type=str,
                       help='config file path (default: None)')
