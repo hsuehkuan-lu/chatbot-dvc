@@ -1,5 +1,5 @@
 import modin.pandas as pd
-from torchtext.data import TabularDataset
+from torchtext.data import TabularDataset, Field
 
 
 class ChatbotDataset(TabularDataset):
@@ -11,23 +11,3 @@ class ChatbotDataset(TabularDataset):
         self.data_dir = data_dir
         self.transform = transform
         super().__init__(path, format, fields, **kwargs)
-
-    def __len__(self):
-        return self.chatbot_frame.size
-
-    def __getitem__(self, idx):
-        if torch.is_tensor(idx):
-            idx = idx.tolist()
-
-        img_name = os.path.join(self.root_dir,
-                                self.landmarks_frame.iloc[idx, 0])
-        image = io.imread(img_name)
-        landmarks = self.landmarks_frame.iloc[idx, 1:]
-        landmarks = np.array([landmarks])
-        landmarks = landmarks.astype('float').reshape(-1, 2)
-        sample = {'image': image, 'landmarks': landmarks}
-
-        if self.transform:
-            sample = self.transform(sample)
-
-        return sample

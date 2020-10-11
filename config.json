@@ -1,16 +1,17 @@
 {
-    "name": "Mnist_LeNet",
+    "name": "Chatbot",
     "n_gpu": 1,
 
     "arch": {
-        "type": "MnistModel",
+        "type": "ChatbotModel",
         "args": {}
     },
     "data_loader": {
-        "type": "MnistDataLoader",
+        "type": "ChatbotDataLoader",
         "args":{
             "data_dir": "data/",
             "batch_size": 128,
+            "sent_len": 256,
             "shuffle": true,
             "validation_split": 0.1,
             "num_workers": 2
@@ -36,14 +37,14 @@
         }
     },
     "trainer": {
-        "epochs": 100,
+        "epochs": 10,
 
         "save_dir": "saved/",
         "save_period": 1,
         "verbosity": 2,
         
         "monitor": "min val_loss",
-        "early_stop": 10,
+        "early_stop": 2,
 
         "tensorboard": true
     }
