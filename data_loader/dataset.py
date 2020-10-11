@@ -5,11 +5,12 @@ from torchtext.data import TabularDataset
 class ChatbotDataset(TabularDataset):
     """Chatbot dataset."""
 
-    def __init__(self, csv_file, data_dir, path, format, fields, transform=None, **kwargs):
-        super().__init__(path, format, fields, **kwargs)
+    def __init__(self, path, format, fields, transform=None, **kwargs):
+
         self.chatbot_frame = pd.read_csv(csv_file, delimiter='\t')
         self.data_dir = data_dir
         self.transform = transform
+        super().__init__(path, format, fields, **kwargs)
 
     def __len__(self):
         return self.chatbot_frame.size

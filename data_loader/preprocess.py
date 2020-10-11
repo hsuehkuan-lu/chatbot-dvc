@@ -7,7 +7,7 @@ MOVIE_LINES_FIELDS = ["lineID", "characterID", "movieID", "character", "text"]
 MOVIE_CONVERSATIONS_FIELDS = ["character1ID", "character2ID", "movieID", "utteranceIDs"]
 
 
-class DataPreprocess:
+class ChatbotDataPreprocess:
     """Chatbot dataset."""
     def __init__(self, data_dir):
         self.data_dir = data_dir
@@ -50,24 +50,27 @@ class DataPreprocess:
 
     @staticmethod
     def _extract_sentence_pairs(conversations):
+        idx = 0
         qa_pairs = []
-        for conversation in conversations:
+        for conversation_id, conversation in enumerate(conversations):
             # Iterate over all the lines of the conversation
-            for i in range(len(conversation["lines"]) - 1):  # We ignore the last line (no answer for it)
-                input_line = conversation["lines"][i]["text"].strip()
-                target_line = conversation["lines"][i + 1]["text"].strip()
+            for i in range(len(conversation['lines']) - 1):  # We ignore the last line (no answer for it)
+                input_line = conversation['lines'][i]['text'].strip()
+                target_line = conversation['lines'][i + 1]['text'].strip()
                 # Filter wrong samples (if one of the lists is empty)
                 if input_line and target_line:
-                    qa_pairs.append([input_line, target_line])
+                    qa_pairs.append([idx, conversation_id, input_line, target_line])
+                    idx += 1
         return qa_pairs
 
     def _dump_file(self, conversations):
         filename = os.path.join(self.data_dir, 'formatted_movie_lines.txt')
         # Unescape the delimiter
         delimiter = str(codecs.decode(self.delimiter, encoding='unicode_escape'))
-
+        headers = ['id', 'conversation_id', 'talk', 'response']
         with open(filename, 'w', encoding='utf-8') as o:
             writer = csv.writer(o, delimiter=delimiter, lineterminator='\n')
+            writer.writerow(headers)
             for pair in self._extract_sentence_pairs(conversations):
                 writer.writerow(pair)
 
@@ -79,3 +82,8 @@ class DataPreprocess:
             lines = datafile.readlines()
         for line in lines[:n]:
             print(line)
+
+
+preprocessor = ChatbotDataPreprocess(
+    '/Users/hlu/Documents/Program/Git/chatbot/data/cornell movie-dialogs corpus'
+)
