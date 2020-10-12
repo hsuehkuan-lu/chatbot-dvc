@@ -64,7 +64,7 @@ class ChatbotDataPreprocess:
         return qa_pairs
 
     def _dump_file(self, conversations):
-        filename = os.path.join(self.data_dir, 'formatted_movie_lines.txt')
+        filename = os.path.join(self.data_dir, 'formatted_movie_lines.csv')
         # Unescape the delimiter
         delimiter = str(codecs.decode(self.delimiter, encoding='unicode_escape'))
         headers = ['id', 'conversation_id', 'talk', 'response']

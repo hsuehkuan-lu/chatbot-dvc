@@ -3,6 +3,7 @@ import collections
 import torch
 import numpy as np
 import data_loader.data_loaders as module_data
+import data_loader.preprocess as module_preprocess
 import model.loss as module_loss
 import model.metric as module_metric
 import model.model as module_arch
@@ -20,7 +21,9 @@ np.random.seed(SEED)
 
 def main(config):
     logger = config.get_logger('train')
-
+    # preprocess
+    # config.init_obj('preprocess', module_preprocess)
+    
     # setup data_loader instances
     data_loader = config.init_obj('data_loader', module_data)
     valid_data_loader = data_loader.split_validation()

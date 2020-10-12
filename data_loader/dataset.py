@@ -1,5 +1,18 @@
+import spacy
 import modin.pandas as pd
 from torchtext.data import TabularDataset, Field
+
+
+class ChatbotField(Field):
+    """Chatbot Field."""
+    def __init__(self, lang, **kwargs):
+        if 'is_target' in kwargs.keys():
+
+        self.spacy_lang = spacy.load(lang)
+        super(ChatbotField, self).__init__(**kwargs)
+
+    def _tokenizer(self, text):
+        return [tok.text for tok in self.spacy_lang.tokenizer(text)]
 
 
 class ChatbotDataset(TabularDataset):
