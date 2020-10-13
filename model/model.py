@@ -1,3 +1,5 @@
+from abc import ABC
+
 import torch.nn as nn
 import torch.nn.functional as F
 from base import BaseModel
@@ -20,3 +22,11 @@ class MnistModel(BaseModel):
         x = F.dropout(x, training=self.training)
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
+
+
+class ChatbotModel(BaseModel):
+    def __init__(self):
+        super().__init__()
+
+    def forward(self, x):
+        pass

@@ -46,6 +46,7 @@ class ChatbotDataLoader(BaseDataLoader):
                 'talk': ('talk', self.TEXT),
                 'response': ('response', self.TEXT)
             },
+            csv_reader_params={'delimiter': '\t'},
             skip_header=False
         )
         self.TEXT.build_vocab(self.dataset, min_freq=min_freq)

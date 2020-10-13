@@ -66,10 +66,10 @@ class ChatbotDataPreprocess:
     def _dump_file(self, conversations):
         filename = os.path.join(self.data_dir, 'formatted_movie_lines.csv')
         # Unescape the delimiter
-        # delimiter = str(codecs.decode(self.delimiter, encoding='unicode_escape'))
+        delimiter = str(codecs.decode(self.delimiter, encoding='unicode_escape'))
         headers = ['id', 'conversation_id', 'talk', 'response']
         with open(filename, 'w', encoding='utf-8') as o:
-            writer = csv.writer(o, lineterminator='\n')
+            writer = csv.writer(o, delimiter=delimiter, lineterminator='\n')
             writer.writerow(headers)
             for pair in self._extract_sentence_pairs(conversations):
                 writer.writerow(pair)
