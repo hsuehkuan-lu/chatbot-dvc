@@ -2,6 +2,7 @@ import re
 import os
 import csv
 import codecs
+import torch
 from torchvision import datasets, transforms
 from base import BaseDataLoader
 import spacy
@@ -26,18 +27,23 @@ class ChatbotDataLoader(BaseDataLoader):
     """
     Chatbot data loading
     """
-    def __init__(self, data_dir, filename, batch_size, sent_len, init_token, eos_token,
-                 min_freq=5, shuffle=True, validation_split=0.0, num_workers=1,
+    def __init__(self, data_dir, filename, save_dir, batch_size, sent_len, init_token, eos_token,
+                 text_field_path=None, min_freq=5, shuffle=True, validation_split=0.0, num_workers=1,
                  training=True):
         self.spacy_lang = spacy.load('en')
-        self.TEXT = Field(
-            sequential=True,
-            init_token=init_token,
-            eos_token=eos_token,
-            fix_length=sent_len,
-            tokenize=self._tokenizer,
-            lower=True
-        )
+        if text_field_path:
+            self.TEXT = torch.load(text_field_path)
+        else:
+            self.TEXT = Field(
+                sequential=True,
+                init_token=init_token,
+                eos_token=eos_token,
+                fix_length=sent_len,
+                tokenize=self._tokenizer,
+                lower=True,
+                include_lengths=True
+            )
+        torch.save(self.TEXT, os.path.join(save_dir, 'TEXT.Field'))
         self.data_dir = data_dir
         self.dataset = TabularDataset(
             path=os.path.join(data_dir, filename),
@@ -49,19 +55,20 @@ class ChatbotDataLoader(BaseDataLoader):
             csv_reader_params={'delimiter': '\t'},
             skip_header=False
         )
-        self.TEXT.build_vocab(self.dataset, min_freq=min_freq)
         if training:
             self.data_iter = BucketIterator(
                 self.dataset,
                 batch_size,
                 repeat=True
             )
+            self.TEXT.build_vocab(self.dataset, min_freq=min_freq)
         else:
             self.data_iter = Iterator(
                 self.dataset,
                 batch_size,
                 repeat=True
             )
+        torch.save(self.TEXT.vocab, os.path.join(save_dir, 'TEXT.Vocab'))
         super().__init__(self.data_iter, batch_size, shuffle, validation_split, num_workers)
 
     def _tokenizer(self, text):

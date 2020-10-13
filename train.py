@@ -22,7 +22,7 @@ np.random.seed(SEED)
 def main(config):
     logger = config.get_logger('train')
     # preprocess
-    config.init_obj('preprocess', module_preprocess)
+    # config.init_obj('preprocess', module_preprocess)
     
     # setup data_loader instances
     data_loader = config.init_obj('data_loader', module_data)

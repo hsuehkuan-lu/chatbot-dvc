@@ -17,8 +17,9 @@
         "args":{
             "data_dir": "data/cornell movie-dialogs corpus",
             "filename": "formatted_movie_lines.csv",
+            "save_dir": "saved/",
             "batch_size": 128,
-            "sent_len": 256,
+            "sent_len": 32,
             "init_token": "<START>",
             "eos_token": "<END>",
             "min_freq": 5,
