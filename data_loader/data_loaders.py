@@ -5,7 +5,7 @@ import codecs
 from torchvision import datasets, transforms
 from base import BaseDataLoader
 import spacy
-from torchtext.data import TabularDataset, Field
+from torchtext.data import TabularDataset, Field, BucketIterator, Iterator
 
 
 class MnistDataLoader(BaseDataLoader):
@@ -26,22 +26,42 @@ class ChatbotDataLoader(BaseDataLoader):
     """
     Chatbot data loading
     """
-    def __init__(self, data_dir, filename, batch_size, emb_size, sent_len, min_freq=5, shuffle=True, validation_split=0.0, num_workers=1,
+    def __init__(self, data_dir, filename, batch_size, sent_len, init_token, eos_token,
+                 min_freq=5, shuffle=True, validation_split=0.0, num_workers=1,
                  training=True):
         self.spacy_lang = spacy.load('en')
-        self.TEXT = Field(sequential=True, tokenize=self._tokenizer, lower=True)
+        self.TEXT = Field(
+            sequential=True,
+            init_token=init_token,
+            eos_token=eos_token,
+            fix_length=sent_len,
+            tokenize=self._tokenizer,
+            lower=True
+        )
         self.data_dir = data_dir
         self.dataset = TabularDataset(
             path=os.path.join(data_dir, filename),
             format='csv',
-            fields=[
-                ('talk', self.TEXT),
-                ('response', self.TEXT)
-            ],
-            csv_reader_params={'delimiter': '\t'}
+            fields={
+                'talk': ('talk', self.TEXT),
+                'response': ('response', self.TEXT)
+            },
+            skip_header=False
         )
         self.TEXT.build_vocab(self.dataset, min_freq=min_freq)
-        super().__init__(self.dataset, batch_size, shuffle, validation_split, num_workers)
+        if training:
+            self.data_iter = BucketIterator(
+                self.dataset,
+                batch_size,
+                repeat=True
+            )
+        else:
+            self.data_iter = Iterator(
+                self.dataset,
+                batch_size,
+                repeat=True
+            )
+        super().__init__(self.data_iter, batch_size, shuffle, validation_split, num_workers)
 
     def _tokenizer(self, text):
         return [tok.text for tok in self.spacy_lang.tokenizer(text)]

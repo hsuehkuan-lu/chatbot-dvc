@@ -27,6 +27,10 @@ def main(config):
     # setup data_loader instances
     data_loader = config.init_obj('data_loader', module_data)
     valid_data_loader = data_loader.split_validation()
+    print(len(data_loader.dataset.examples))
+    print(len(valid_data_loader.dataset.examples))
+    print(data_loader.dataset.examples[0].__dict__)
+    print(data_loader.dataset.examples[1].__dict__)
 
     # build model architecture, then print to console
     model = config.init_obj('arch', module_arch)
