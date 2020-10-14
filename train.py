@@ -25,11 +25,12 @@ def main(config):
     # config.init_obj('preprocess', module_preprocess)
     
     # setup data_loader instances
-    data_loader = config.init_obj('data_loader', module_data)
-    valid_data_loader = data_loader.split_validation()
+    data_loader = config.init_obj('data_loader', module_data, save_dir=config.save_dir)
 
     # build model architecture, then print to console
-    model = config.init_obj('arch', module_arch)
+    model = config.init_obj('arch', module_arch,
+                            vocab_size=data_loader.vocab_size,
+                            padding_idx=data_loader.padding_idx)
     logger.info(model)
 
     # get function handles of loss and metrics
@@ -44,8 +45,8 @@ def main(config):
 
     trainer = Trainer(model, criterion, metrics, optimizer,
                       config=config,
-                      data_loader=data_loader,
-                      valid_data_loader=valid_data_loader,
+                      data_loader=data_loader.train_iter,
+                      valid_data_loader=data_loader.valid_iter,
                       lr_scheduler=lr_scheduler)
 
     trainer.train()

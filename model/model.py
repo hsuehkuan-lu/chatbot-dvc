@@ -25,8 +25,15 @@ class MnistModel(BaseModel):
 
 
 class ChatbotModel(BaseModel):
-    def __init__(self):
+    def __init__(self, vocab_size, padding_idx, hidden_size, embed_size, n_layers=1, dropout=0.):
         super().__init__()
+        self.vocab_size = vocab_size
+        self.padding_idx = padding_idx
+        self.n_layers = n_layers
+        self.hidden_size = hidden_size
+        self.embed_size = embed_size
+        self.dropout = dropout
 
-    def forward(self, x):
-        pass
+    def forward(self, input_seq, input_length):
+        embedding = nn.Embedding(self.vocab_size, self.embed_size, padding_idx=self.padding_idx)
+        embed = embedding(input_seq)

@@ -17,15 +17,17 @@
         "args":{
             "data_dir": "data/cornell movie-dialogs corpus",
             "filename": "formatted_movie_lines.csv",
-            "save_dir": "saved/",
+            "text_field_path": null,
+            "vocab_path": null,
             "batch_size": 128,
             "sent_len": 32,
             "init_token": "<START>",
             "eos_token": "<END>",
+            "pad_token": "<PAD>",
+            "unk_token": "<UNK>",
             "min_freq": 5,
             "shuffle": true,
-            "validation_split": 0.1,
-            "num_workers": 2
+            "validation_split": 0.1
         }
     },
     "optimizer": {
