@@ -29,7 +29,7 @@ class ChatbotDataLoader(object):
     Chatbot data loading
     """
     def __init__(self, data_dir, filename, save_dir, batch_size, sent_len, init_token, eos_token,
-                 text_field_path=None, vocab_path=None, min_freq=5, shuffle=True, validation_split=0.0, training=True):
+                 text_field_path=None, vocab_path=None, min_freq=5, shuffle=True, validation_split=0.0):
         # create text field
         self.spacy_lang = spacy.load('en')
         self.TEXT = self._create_text_field(
@@ -53,7 +53,7 @@ class ChatbotDataLoader(object):
             self.valid_iter = BucketIterator(self.dataset, batch_size, train=False, repeat=True)
         else:
             self.train = self.dataset
-        self.train_iter = BucketIterator(self.train, batch_size, repeat=True)
+        self.train_iter = BucketIterator(self.train, batch_size, shuffle=shuffle, repeat=True)
 
     def _tokenizer(self, text):
         return [tok.text for tok in self.spacy_lang.tokenizer(text)]
@@ -68,6 +68,7 @@ class ChatbotDataLoader(object):
                 eos_token=eos_token,
                 fix_length=sent_len,
                 tokenize=self._tokenizer,
+                include_lengths=True,
                 lower=True
             )
         torch.save(text_field, os.path.join(save_dir, 'TEXT.Field'))
