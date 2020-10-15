@@ -7,6 +7,7 @@ from torchvision import datasets, transforms
 from base import BaseDataLoader
 import spacy
 from torchtext.data import TabularDataset, Field, BucketIterator, Iterator
+from torchtext.vocab import Vocab
 
 
 class MnistDataLoader(BaseDataLoader):
@@ -27,15 +28,13 @@ class ChatbotDataLoader(object):
     """
     Chatbot data loading
     """
-    def __init__(self, data_dir, filename, save_dir, batch_size, sent_len, init_token, eos_token, pad_token, unk_token,
+    def __init__(self, data_dir, filename, save_dir, batch_size, sent_len, init_token, eos_token,
                  text_field_path=None, vocab_path=None, min_freq=5, shuffle=True, validation_split=0.0, training=True):
         # create text field
         self.spacy_lang = spacy.load('en')
         self.TEXT = self._create_text_field(
             init_token=init_token,
             eos_token=eos_token,
-            pad_token=pad_token,
-            unk_token=unk_token,
             sent_len=sent_len,
             text_field_path=text_field_path,
             save_dir=save_dir
@@ -46,7 +45,8 @@ class ChatbotDataLoader(object):
         # create vocab
         self._create_vocab(vocab_path, min_freq, save_dir)
         self.vocab_size = len(self.TEXT.vocab.itos)
-        self.padding_idx = self.TEXT.vocab.stoi[pad_token]
+        self.padding_idx = self.TEXT.vocab.stoi['<pad>']
+        self.unk_idx = self.TEXT.vocab.stoi['<unk>']
         # split data
         if 1 > validation_split > 0:
             self.train, self.valid = self.dataset.split(split_ratio=1. - validation_split)
@@ -58,7 +58,7 @@ class ChatbotDataLoader(object):
     def _tokenizer(self, text):
         return [tok.text for tok in self.spacy_lang.tokenizer(text)]
 
-    def _create_text_field(self, init_token, eos_token, pad_token, unk_token, sent_len, text_field_path, save_dir):
+    def _create_text_field(self, init_token, eos_token, sent_len, text_field_path, save_dir):
         if text_field_path:
             text_field = torch.load(text_field_path)
         else:
@@ -66,8 +66,6 @@ class ChatbotDataLoader(object):
                 sequential=True,
                 init_token=init_token,
                 eos_token=eos_token,
-                pad_token=pad_token,
-                unk_token=unk_token,
                 fix_length=sent_len,
                 tokenize=self._tokenizer,
                 lower=True
@@ -89,6 +87,7 @@ class ChatbotDataLoader(object):
         return dataset
 
     def _create_vocab(self, vocab_path, min_freq, save_dir):
+
         if vocab_path:
             self.TEXT.vocab = torch.load(vocab_path)
         else:

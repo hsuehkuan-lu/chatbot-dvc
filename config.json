@@ -21,10 +21,8 @@
             "vocab_path": null,
             "batch_size": 128,
             "sent_len": 32,
-            "init_token": "<START>",
-            "eos_token": "<END>",
-            "pad_token": "<PAD>",
-            "unk_token": "<UNK>",
+            "init_token": "<init>",
+            "eos_token": "<eos>",
             "min_freq": 5,
             "shuffle": true,
             "validation_split": 0.1
