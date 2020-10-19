@@ -120,12 +120,19 @@ class LuongAttnDecoderRNN(BaseModel):
         emb = self.embedding(input_step)
         emb = self.embedding_dropout(emb)
         # output = []
-        outputs, hidden = self.gru(emb, last_hidden)
-        attn_weights = self.attn(outputs, encoder_outputs)
+        output, hidden = self.gru(emb, last_hidden)
+        attn_weights = self.attn(output, encoder_outputs)
         # [batch_size, 1, max_length] * [batch_size, max_length, hidden_size]
         context = attn_weights.bmm(encoder_outputs.transpose(0, 1))
 
         # [seq_len, batch_size, 2 * hidden_size]
-        outputs = outputs.squeeze(0)
+        # output = [1, batch_size, hidden_size] -> [batch_size, hidden_size]
+        output = output.squeeze(0)
         # [batch_size, hidden_size]
         context = context.squeeze(1)
+        concat_input = torch.cat((output, context), dim=-1)
+        concat_output = torch.tanh(self.concat(concat_input))
+
+        output = self.out(concat_output)
+        output = F.softmax(output, dim=-1)
+        return output, hidden
