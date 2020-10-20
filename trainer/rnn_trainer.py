@@ -38,10 +38,10 @@ class Trainer(BaseTrainer):
 
         self.train_metrics.reset()
         for batch_idx, data in enumerate(self.data_loader):
-            talk, response = data.talk.to(self.device), data.response.to(self.device)
-            talk_seq, talk_seq_len = talk
-            response_seq, response_seq_len = response
-            talk_mask = (talk_seq != self.padding_idx)
+            talk, response = data.talk, data.response
+            talk_seq, talk_seq_len = talk[0].to(self.device), talk[1].to(self.device)
+            response_seq, response_seq_len = response[0].to(self.device), response[1].to(self.device)
+            talk_mask = (talk_seq != self.padding_idx).to(self.device)
             self.optimizer.zero_grad()
             output = self.model(talk_seq, talk_seq_len)
             loss = self.criterion(output, target)
