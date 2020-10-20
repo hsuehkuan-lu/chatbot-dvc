@@ -8,7 +8,7 @@ import model.loss as module_loss
 import model.metric as module_metric
 import model.model as module_arch
 from parse_config import ConfigParser
-from trainer import Trainer
+from trainer.rnn_trainer import Trainer
 
 
 # fix random seeds for reproducibility
@@ -22,29 +22,41 @@ np.random.seed(SEED)
 def main(config):
     logger = config.get_logger('train')
     # preprocess
-    config.init_obj('preprocess', module_preprocess)
+    # config.init_obj('preprocess', module_preprocess)
     
     # setup data_loader instances
     data_loader = config.init_obj('data_loader', module_data, save_dir=config.save_dir)
 
     # build model architecture, then print to console
-    model = config.init_obj('arch', module_arch,
-                            vocab_size=data_loader.vocab_size,
-                            padding_idx=data_loader.padding_idx)
-    logger.info(model)
+    encoder = config.init_obj(
+        'encoder_arch', module_arch,
+        vocab_size=data_loader.vocab_size,
+        padding_idx=data_loader.padding_idx,
+        hidden_size=config['hidden_size'],
+        embed_size=config['embed_size']
+    )
+    logger.info(encoder)
+    decoder = config.init_obj(
+        'decoder_arch', module_arch,
+        embedding=encoder.embedding,
+        hidden_size=config['hidden_size'],
+        vocab_size=data_loader.vocab_size
+    )
+    logger.info(decoder)
 
     # get function handles of loss and metrics
     criterion = getattr(module_loss, config['loss'])
     metrics = [getattr(module_metric, met) for met in config['metrics']]
 
     # build optimizer, learning rate scheduler. delete every lines containing lr_scheduler for disabling scheduler
-    trainable_params = filter(lambda p: p.requires_grad, model.parameters())
+    trainable_params = filter(lambda p: p.requires_grad, encoder.parameters())
     optimizer = config.init_obj('optimizer', torch.optim, trainable_params)
 
     lr_scheduler = config.init_obj('lr_scheduler', torch.optim.lr_scheduler, optimizer)
 
-    trainer = Trainer(model, criterion, metrics, optimizer,
+    trainer = Trainer(encoder, criterion, metrics, optimizer,
                       config=config,
+                      padding_idx=data_loader.padding_idx,
                       data_loader=data_loader.train_iter,
                       valid_data_loader=data_loader.valid_iter,
                       lr_scheduler=lr_scheduler)

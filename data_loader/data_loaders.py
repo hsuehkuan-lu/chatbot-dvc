@@ -7,7 +7,6 @@ from torchvision import datasets, transforms
 from base import BaseDataLoader
 import spacy
 from torchtext.data import TabularDataset, Field, BucketIterator, Iterator
-from torchtext.vocab import Vocab
 
 
 class MnistDataLoader(BaseDataLoader):
@@ -29,7 +28,7 @@ class ChatbotDataLoader(object):
     Chatbot data loading
     """
     def __init__(self, data_dir, filename, save_dir, batch_size, sent_len, init_token, eos_token,
-                 text_field_path=None, vocab_path=None, min_freq=5, shuffle=True, validation_split=0.0):
+                 text_field_path=None, vocab_path=None, min_freq=5, shuffle=True, validation_split=0.0, debug=False):
         # create text field
         self.spacy_lang = spacy.load('en')
         self.TEXT = self._create_text_field(
@@ -40,8 +39,10 @@ class ChatbotDataLoader(object):
             save_dir=save_dir
         )
         # create dataset
+        self.debug = debug
         self.data_dir = data_dir
         self.dataset = self._create_dataset(filename)
+        self.n_samples = len(self.dataset)
         # create vocab
         self._create_vocab(vocab_path, min_freq, save_dir)
         self.vocab_size = len(self.TEXT.vocab.itos)
@@ -75,20 +76,31 @@ class ChatbotDataLoader(object):
         return text_field
 
     def _create_dataset(self, filename):
-        dataset = TabularDataset(
-            path=os.path.join(self.data_dir, filename),
-            format='csv',
-            fields={
-                'talk': ('talk', self.TEXT),
-                'response': ('response', self.TEXT)
-            },
-            csv_reader_params={'delimiter': '\t'},
-            skip_header=False
-        )
+        if self.debug:
+            dataset = TabularDataset(
+                path=os.path.join(self.data_dir, 'first_100_formatted_movie_lines.csv'),
+                format='csv',
+                fields={
+                    'talk': ('talk', self.TEXT),
+                    'response': ('response', self.TEXT)
+                },
+                csv_reader_params={'delimiter': '\t'},
+                skip_header=False
+            )
+        else:
+            dataset = TabularDataset(
+                path=os.path.join(self.data_dir, filename),
+                format='csv',
+                fields={
+                    'talk': ('talk', self.TEXT),
+                    'response': ('response', self.TEXT)
+                },
+                csv_reader_params={'delimiter': '\t'},
+                skip_header=False
+            )
         return dataset
 
     def _create_vocab(self, vocab_path, min_freq, save_dir):
-
         if vocab_path:
             self.TEXT.vocab = torch.load(vocab_path)
         else:

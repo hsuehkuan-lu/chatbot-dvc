@@ -92,11 +92,11 @@ class Attention(BaseModel):
 
 
 class LuongAttnDecoderRNN(BaseModel):
-    def __init__(self, attn_model, embedding, hidden_size, output_size, n_layers=1, dropout=0.1):
+    def __init__(self, attn_model, embedding, hidden_size, vocab_size, n_layers=1, dropout=0.1):
         super().__init__()
         self.attn_model = attn_model
         self.hidden_size = hidden_size
-        self.output_size = output_size
+        self.vocab_size = vocab_size
         self.n_layers = n_layers
         self.dropout = dropout
 
@@ -104,7 +104,7 @@ class LuongAttnDecoderRNN(BaseModel):
         self.embedding_dropout = nn.Dropout(dropout)
         self.gru = nn.GRU(hidden_size, hidden_size, n_layers, dropout=dropout)
         self.concat = nn.Linear(2 * hidden_size, hidden_size)
-        self.out = nn.Linear(hidden_size, output_size)
+        self.out = nn.Linear(hidden_size, vocab_size)
 
         self.attn = Attention(attn_model, hidden_size)
 
