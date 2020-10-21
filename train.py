@@ -43,23 +43,31 @@ def main(config):
         vocab_size=data_loader.vocab_size
     )
     logger.info(decoder)
+    model_idx = dict([('encoder', 0), ('decoder', 1)])
+    models = [encoder, decoder]
 
     # get function handles of loss and metrics
     criterion = getattr(module_loss, config['loss'])
     metrics = [getattr(module_metric, met) for met in config['metrics']]
 
     # build optimizer, learning rate scheduler. delete every lines containing lr_scheduler for disabling scheduler
-    trainable_params = filter(lambda p: p.requires_grad, encoder.parameters())
-    optimizer = config.init_obj('optimizer', torch.optim, trainable_params)
+    optimizers = []
+    lr_schedulers = []
+    for idx in range(len(models)):
+        trainable_params = filter(lambda p: p.requires_grad, models[idx].parameters())
+        optimizer = config.init_obj('optimizer', torch.optim, trainable_params)
+        lr_scheduler = config.init_obj('lr_scheduler', torch.optim.lr_scheduler, optimizer)
+        optimizers += [optimizer]
+        lr_schedulers += [lr_scheduler]
 
-    lr_scheduler = config.init_obj('lr_scheduler', torch.optim.lr_scheduler, optimizer)
-
-    trainer = Trainer(encoder, criterion, metrics, optimizer,
+    trainer = Trainer(model_idx, models, criterion, metrics, optimizers,
                       config=config,
                       padding_idx=data_loader.padding_idx,
+                      init_token=data_loader.init_token,
                       data_loader=data_loader.train_iter,
                       valid_data_loader=data_loader.valid_iter,
-                      lr_scheduler=lr_scheduler)
+                      lr_scheduler=lr_scheduler
+                      )
 
     trainer.train()
 

@@ -48,6 +48,7 @@ class ChatbotDataLoader(object):
         self.vocab_size = len(self.TEXT.vocab.itos)
         self.padding_idx = self.TEXT.vocab.stoi['<pad>']
         self.unk_idx = self.TEXT.vocab.stoi['<unk>']
+        self.init_token = init_token
         # split data
         if 1 > validation_split > 0:
             self.train, self.valid = self.dataset.split(split_ratio=1. - validation_split)

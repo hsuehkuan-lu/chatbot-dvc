@@ -4,7 +4,7 @@ from numpy import inf
 from logger import TensorboardWriter
 
 
-class BaseMultiTrainer:
+class BaseMultiTrainer(object):
     """
     Base class for all trainers
     """

@@ -51,7 +51,7 @@
     "optimizer": {
         "type": "Adam",
         "args":{
-            "lr": 0.001,
+            "lr": 0.0001,
             "weight_decay": 0,
             "amsgrad": true
         }
@@ -76,6 +76,7 @@
         
         "monitor": "min val_loss",
         "early_stop": 2,
+        "clip": 50.0,
 
         "tensorboard": true
     }

@@ -48,6 +48,8 @@ class ChatbotEncoder(BaseModel):
         outputs, hidden = self.gru(packed, hidden)
         outputs, _ = nn.utils.rnn.pad_packed_sequence(outputs)
         outputs = outputs[:, :, :self.hidden_size] + outputs[:, :, self.hidden_size:]
+        # out = nn.Linear(2 * self.hidden_size, self.hidden_size)
+        # outputs = F.relu(out(outputs))
         return outputs, hidden
 
 
