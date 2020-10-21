@@ -84,7 +84,7 @@ class Trainer(BaseMultiTrainer):
             self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
             self.train_metrics.update('loss', loss.item())
             for met in self.metric_ftns:
-                self.train_metrics.update(met.__name__, met(output, target))
+                self.train_metrics.update(met.__name__, met(encoder_outputs, response_seq))
 
             if batch_idx % self.log_step == 0:
                 self.logger.debug('Train Epoch: {} {} Loss: {:.6f}'.format(
@@ -99,10 +99,11 @@ class Trainer(BaseMultiTrainer):
 
         if self.do_validation:
             val_log = self._valid_epoch(epoch)
-            log.update(**{'val_'+k : v for k, v in val_log.items()})
+            log.update(**{'val_'+k: v for k, v in val_log.items()})
 
         if self.lr_schedulers is not None:
-            self.lr_scheduler.step()
+            for lr_scheduler in self.lr_schedulers:
+                lr_scheduler.step()
         return log
 
     def _valid_epoch(self, epoch):

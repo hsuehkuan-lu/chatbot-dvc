@@ -66,7 +66,7 @@ def main(config):
                       init_token=data_loader.init_token,
                       data_loader=data_loader.train_iter,
                       valid_data_loader=data_loader.valid_iter,
-                      lr_scheduler=lr_scheduler
+                      lr_schedulers=lr_schedulers
                       )
 
     trainer.train()
