@@ -39,6 +39,7 @@ def main(config):
     decoder = config.init_obj(
         'decoder_arch', module_arch,
         embedding=encoder.embedding,
+        embed_size=config['embed_size'],
         hidden_size=config['hidden_size'],
         vocab_size=data_loader.vocab_size
     )
@@ -64,10 +65,8 @@ def main(config):
                       config=config,
                       padding_idx=data_loader.padding_idx,
                       init_token=data_loader.init_token,
-                      data_loader=data_loader.train_iter,
-                      valid_data_loader=data_loader.valid_iter,
-                      lr_schedulers=lr_schedulers
-                      )
+                      data_loader=data_loader,
+                      lr_schedulers=lr_schedulers)
 
     trainer.train()
 

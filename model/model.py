@@ -44,7 +44,7 @@ class ChatbotEncoder(BaseModel):
         hidden = [num_layers * num_directions, batch_size, hidden_size]
         """
         emb = self.embedding(input_seq)
-        packed = nn.utils.rnn.pack_padded_sequence(emb, input_lengths)
+        packed = nn.utils.rnn.pack_padded_sequence(emb, input_lengths, enforce_sorted=False)
         outputs, hidden = self.gru(packed, hidden)
         outputs, _ = nn.utils.rnn.pad_packed_sequence(outputs)
         outputs = outputs[:, :, :self.hidden_size] + outputs[:, :, self.hidden_size:]
@@ -94,7 +94,7 @@ class Attention(BaseModel):
 
 
 class LuongAttnDecoderRNN(BaseModel):
-    def __init__(self, attn_model, embedding, hidden_size, vocab_size, n_layers=1, dropout=0.1):
+    def __init__(self, attn_model, embedding, embed_size, hidden_size, vocab_size, n_layers=1, dropout=0.1):
         super().__init__()
         self.attn_model = attn_model
         self.hidden_size = hidden_size
@@ -104,7 +104,8 @@ class LuongAttnDecoderRNN(BaseModel):
 
         self.embedding = embedding
         self.embedding_dropout = nn.Dropout(dropout)
-        self.gru = nn.GRU(hidden_size, hidden_size, n_layers, dropout=dropout)
+        self.embed_size = embed_size
+        self.gru = nn.GRU(embed_size, hidden_size, n_layers, dropout=dropout)
         self.concat = nn.Linear(2 * hidden_size, hidden_size)
         self.out = nn.Linear(hidden_size, vocab_size)
 

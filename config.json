@@ -38,7 +38,7 @@
             "filename": "formatted_movie_lines.csv",
             "text_field_path": null,
             "vocab_path": null,
-            "batch_size": 128,
+            "batch_size": 64,
             "sent_len": 32,
             "init_token": "<init>",
             "eos_token": "<eos>",

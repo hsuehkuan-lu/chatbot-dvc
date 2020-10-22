@@ -40,6 +40,8 @@ class ChatbotDataLoader(object):
         )
         # create dataset
         self.debug = debug
+        self.batch_size = batch_size
+        self.sent_len = sent_len
         self.data_dir = data_dir
         self.dataset = self._create_dataset(filename)
         self.n_samples = len(self.dataset)
@@ -48,14 +50,16 @@ class ChatbotDataLoader(object):
         self.vocab_size = len(self.TEXT.vocab.itos)
         self.padding_idx = self.TEXT.vocab.stoi['<pad>']
         self.unk_idx = self.TEXT.vocab.stoi['<unk>']
-        self.init_token = init_token
+        self.init_token = self.TEXT.vocab.stoi[init_token]
         # split data
         if 1 > validation_split > 0:
             self.train, self.valid = self.dataset.split(split_ratio=1. - validation_split)
-            self.valid_iter = BucketIterator(self.dataset, batch_size, train=False, repeat=True)
+            self.valid_iter = BucketIterator(self.dataset, batch_size, sort_key=lambda x: len(x.text),
+                                             train=False, repeat=True)
         else:
             self.train = self.dataset
-        self.train_iter = BucketIterator(self.train, batch_size, shuffle=shuffle, repeat=True)
+        self.train_iter = BucketIterator(self.train, batch_size, sort_key=lambda x: len(x.text),
+                                         shuffle=shuffle, repeat=True)
 
     def _tokenizer(self, text):
         return [tok.text for tok in self.spacy_lang.tokenizer(text)]

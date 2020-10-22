@@ -16,7 +16,7 @@ def mask_nll_loss(x, y, mask):
     mask = [batch_size]
     """
     total = mask.sum()
-    cross_entropy = -torch.log(torch.gather(x, dim=1, index=y.view(-1, 1)).suqeeze(1))
+    cross_entropy = -torch.log(torch.gather(x, dim=1, index=y.view(-1, 1)).squeeze(1))
     loss = cross_entropy.masked_select(mask).mean()
     loss = loss.to(device)
     return loss, total.item()

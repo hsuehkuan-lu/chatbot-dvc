@@ -10,7 +10,7 @@ class Trainer(BaseMultiTrainer):
     Trainer class
     """
     def __init__(self, model_idx, models, criterion, metric_ftns, optimizers, config, padding_idx, data_loader,
-                 init_token, valid_data_loader=None, lr_schedulers=None, len_epoch=2):
+                 init_token, do_validation=False, lr_schedulers=None, len_epoch=2):
         super().__init__(models, criterion, metric_ftns, optimizers, config)
         self.model_idx = model_idx
         self.config = config
@@ -18,9 +18,9 @@ class Trainer(BaseMultiTrainer):
         self.init_token = init_token
         self.data_loader = data_loader
         self.batch_size = data_loader.batch_size
+        self.vocab = data_loader.TEXT.vocab.itos
         self.len_epoch = len_epoch
-        self.valid_data_loader = valid_data_loader
-        self.do_validation = self.valid_data_loader is not None
+        self.do_validation = do_validation
         self.lr_schedulers = lr_schedulers
         self.clip = self.config['trainer']['clip']
         self.log_step = int(np.sqrt(data_loader.batch_size))
@@ -39,7 +39,7 @@ class Trainer(BaseMultiTrainer):
             self.models[idx].train()
 
         self.train_metrics.reset()
-        for batch_idx, data in enumerate(self.data_loader):
+        for batch_idx, data in enumerate(self.data_loader.train_iter):
             talk, response = data.talk, data.response
             talk_seq, talk_seq_len = talk[0].to(self.device), talk[1].to(self.device)
             response_seq, response_seq_len = response[0].to(self.device), response[1].to(self.device)
@@ -50,7 +50,7 @@ class Trainer(BaseMultiTrainer):
                 self.optimizers[idx].zero_grad()
             encoder_outputs, encoder_hidden = self.models[self.model_idx['encoder']](talk_seq, talk_seq_len)
 
-            decoder_input = torch.LongTensor([[self.init_token for _ in range(self.batch_size)]])
+            decoder_input = torch.LongTensor([[self.init_token for _ in range(int(encoder_outputs.size(1)))]])
             decoder_input = decoder_input.to(self.device)
 
             # TODO: test different init hidden
@@ -63,13 +63,15 @@ class Trainer(BaseMultiTrainer):
             # )
             decoder_hidden = encoder_hidden[-self.models[self.model_idx['decoder']].n_layers:]
 
-            loss = torch.tensor(0)
+            decoder_outputs = []
+            loss = torch.zeros(1)
             losses = []
-            n_totals = torch.tensor(0)
+            n_totals = torch.zeros(1)
             for t in range(self.data_loader.sent_len):
                 decoder_output, decoder_hidden = self.models[self.model_idx['decoder']](
                     decoder_input, decoder_hidden, encoder_outputs
                 )
+                decoder_outputs += [decoder_output]
                 decoder_input = response_seq[t:t+1]
                 mask_loss, n_total = self.criterion(decoder_output, response_seq[t], mask[t])
                 loss += mask_loss
@@ -77,21 +79,31 @@ class Trainer(BaseMultiTrainer):
                 n_totals += n_total
 
             loss.backward()
-            for idx in range(len(self.optimizers)):
-                torch.nn.utils.clip_grad_norm_(self.optimizers[idx], self.clip)
+            for idx in range(len(self.models)):
+                torch.nn.utils.clip_grad_norm_(self.models[idx].parameters(), self.clip)
                 self.optimizers[idx].step()
 
+            decoder_outputs = torch.stack(decoder_outputs, dim=0)
             self.writer.set_step((epoch - 1) * self.len_epoch + batch_idx)
             self.train_metrics.update('loss', loss.item())
             for met in self.metric_ftns:
-                self.train_metrics.update(met.__name__, met(encoder_outputs, response_seq))
+                self.train_metrics.update(met.__name__, met(decoder_outputs, response_seq))
 
             if batch_idx % self.log_step == 0:
                 self.logger.debug('Train Epoch: {} {} Loss: {:.6f}'.format(
                     epoch,
                     self._progress(batch_idx),
                     loss.item()))
-                self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
+                for row in talk_seq.T:
+                    text = ' '.join([self.vocab[tok] for tok in row if tok != self.padding_idx])
+                    self.writer.add_text('talk', text)
+                for row in response_seq.T:
+                    text = ' '.join([self.vocab[tok] for tok in row if tok != self.padding_idx])
+                    self.writer.add_text('response', text)
+                pred = torch.argmax(decoder_outputs, dim=-1)
+                for row in pred.T:
+                    text = ' '.join([self.vocab[tok] for tok in row if tok != self.padding_idx])
+                    self.writer.add_text('pred', text)
 
             if batch_idx == self.len_epoch:
                 break
@@ -116,7 +128,7 @@ class Trainer(BaseMultiTrainer):
         self.model.eval()
         self.valid_metrics.reset()
         with torch.no_grad():
-            for batch_idx, (data, target) in enumerate(self.valid_data_loader):
+            for batch_idx, (data, target) in enumerate(self.data_loader.valid_iter):
                 data, target = data.to(self.device), target.to(self.device)
 
                 output = self.model(data)
