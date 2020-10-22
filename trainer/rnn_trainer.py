@@ -125,11 +125,15 @@ class Trainer(BaseMultiTrainer):
         :param epoch: Integer, current training epoch.
         :return: A log that contains information about validation
         """
-        self.model.eval()
+        for idx in range(len(self.models)):
+            self.models[idx].eval()
+
         self.valid_metrics.reset()
         with torch.no_grad():
-            for batch_idx, (data, target) in enumerate(self.data_loader.valid_iter):
-                data, target = data.to(self.device), target.to(self.device)
+            for batch_idx, data in enumerate(self.data_loader.valid_iter):
+                talk, response = data.talk, data.response
+                talk_seq, talk_seq_len = talk[0].to(self.device), talk[1].to(self.device)
+                response_seq, response_seq_len = response[0].to(self.device), response[1].to(self.device)
 
                 output = self.model(data)
                 loss = self.criterion(output, target)
