@@ -48,9 +48,9 @@ class Trainer(BaseMultiTrainer):
             mask = mask.to(self.device)
             for idx in range(len(self.optimizers)):
                 self.optimizers[idx].zero_grad()
-            encoder_outputs, encoder_hidden = self.models[self.model_idx['encoder']](talk_seq, talk_seq_len)
 
-            decoder_input = torch.LongTensor([[self.init_token for _ in range(int(encoder_outputs.size(1)))]])
+            encoder_outputs, encoder_hidden = self.models[self.model_idx['encoder']](talk_seq, talk_seq_len)
+            decoder_input = torch.ones(1, encoder_outputs.size(1), dtype=torch.long) * self.init_token
             decoder_input = decoder_input.to(self.device)
 
             # TODO: test different init hidden
@@ -135,10 +135,13 @@ class Trainer(BaseMultiTrainer):
                 talk_seq, talk_seq_len = talk[0].to(self.device), talk[1].to(self.device)
                 response_seq, response_seq_len = response[0].to(self.device), response[1].to(self.device)
 
-                output = self.model(data)
+                encoder_outputs, encoder_hidden = self.models[self.model_idx['encoder']](talk_seq, talk_seq_len)
+                decoder_input = torch.ones(1, encoder_outputs.size(1), dtype=torch.long) * self.init_token
+                decoder_input = decoder_input.to(self.device)
+                decoder_hidden = encoder_hidden[-self.models[self.model_idx['decoder']].n_layers:]
                 loss = self.criterion(output, target)
 
-                self.writer.set_step((epoch - 1) * len(self.valid_data_loader) + batch_idx, 'valid')
+                self.writer.set_step((epoch - 1) * len(self.data_loader.valid_iter.dataset) + batch_idx, 'valid')
                 self.valid_metrics.update('loss', loss.item())
                 for met in self.metric_ftns:
                     self.valid_metrics.update(met.__name__, met(output, target))

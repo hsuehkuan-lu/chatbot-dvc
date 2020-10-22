@@ -139,3 +139,36 @@ class LuongAttnDecoderRNN(BaseModel):
         output = self.out(concat_output)
         output = F.softmax(output, dim=-1)
         return output, hidden
+
+
+class GreedySearchDecoder(BaseModel):
+    def __init__(self, encoder, decoder, init_tok):
+        super(GreedySearchDecoder, self).__init__()
+        self.encoder = encoder
+        self.decoder = decoder
+        self.init_tok = init_tok
+
+    def forward(self, talk_seq, talk_seq_len, sent_len):
+        encoder_outputs, encoder_hidden = self.encoder(talk_seq, talk_seq_len)
+        decoder_hidden = encoder_hidden[-self.decoder.n_layers:]
+        decoder_input = torch.ones(1, 1, dtype=torch.long) * self.init_tok
+
+        all_tokens = []
+        all_scores = []
+        # all_tokens = torch.zeros([0], dtype=torch.long)
+        # all_scores = torch.zeros([0])
+
+        for _ in range(sent_len):
+            decoder_output, decoder_hidden = self.decoder(
+                decoder_input, decoder_hidden, encoder_outputs
+            )
+            decoder_scores, decoder_input = torch.max(decoder_output, dim=-1)
+            all_tokens += [decoder_input]
+            all_scores += [decoder_scores]
+            # all_tokens = torch.cat((all_tokens, decoder_input), dim=0)
+            # all_scores = torch.cat((all_scores, decoder_scores), dim=0)
+            decoder_input = torch.unsqueeze(decoder_input, dim=0)
+
+        all_tokens = torch.stack(all_tokens, dim=0)
+        all_scores = torch.stack(all_scores, dim=0)
+        return all_tokens, all_scores
