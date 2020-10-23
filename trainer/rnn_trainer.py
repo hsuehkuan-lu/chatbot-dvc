@@ -65,9 +65,6 @@ class Trainer(BaseMultiTrainer):
             decoder_hidden = encoder_hidden[-self.models[self.model_idx['decoder']].n_layers:]
             decoder_outputs = []
 
-            for model in self.models:
-                for p in model.parameters():
-                    print(type(p), p.device, p.size())
             loss = torch.zeros(1, device=self.device)
             losses = []
             n_totals = torch.zeros(1, device=self.device)
