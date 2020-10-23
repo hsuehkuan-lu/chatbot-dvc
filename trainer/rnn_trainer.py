@@ -130,6 +130,7 @@ class Trainer(BaseMultiTrainer):
         with torch.no_grad():
             batch_idx = 0
             for data in self.data_loader.valid_iter:
+                data = data.to(self.device)
                 talk, response = data.talk, data.response
                 talk_seq, talk_seq_len = talk[0].to(self.device), talk[1].to(self.device)
                 response_seq, response_seq_len = response[0].to(self.device), response[1].to(self.device)
@@ -140,6 +141,10 @@ class Trainer(BaseMultiTrainer):
                 decoder_input = torch.ones(1, encoder_outputs.size(1), dtype=torch.long) * self.init_token
                 decoder_input = decoder_input.to(self.device)
                 decoder_hidden = encoder_hidden[-self.models[self.model_idx['decoder']].n_layers:]
+
+                for model in self.models:
+                    for p in model.parameters():
+                        print(type(p), p.device, p.size())
 
                 decoder_outputs = []
                 loss = torch.zeros(1, device=self.device)
