@@ -37,8 +37,8 @@
         "args":{
             "data_dir": "data/cornell movie-dialogs corpus",
             "filename": "formatted_movie_lines.csv",
-            "text_field_path": null,
-            "vocab_path": null,
+            "text_field_path": "/Users/hlu/Documents/Program/Git/chatbot/saved/field/TEXT.Field",
+            "vocab_path": "/Users/hlu/Documents/Program/Git/chatbot/saved/field/TEXT.vocab",
             "batch_size": 64,
             "sent_len": 32,
             "init_token": "<init>",
@@ -53,14 +53,16 @@
         "type": "Adam",
         "args":{
             "lr": 1e-4,
-            "weight_decay": 0
+            "weight_decay": 0,
+            "amsgrad": true
         }
     },
     "decoder_optimizer": {
         "type": "Adam",
         "args":{
             "lr": 5e-4,
-            "weight_decay": 0
+            "weight_decay": 0,
+            "amsgrad": true
         }
     },
     "loss": "mask_nll_loss",
@@ -83,7 +85,7 @@
         "do_validation": true,
         
         "monitor": "min val_loss",
-        "early_stop": 2,
+        "early_stop": 10,
         "clip": 50.0,
 
         "tensorboard": true

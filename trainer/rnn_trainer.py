@@ -10,7 +10,7 @@ class Trainer(BaseMultiTrainer):
     Trainer class
     """
     def __init__(self, model_idx, models, criterion, metric_ftns, optimizers, config, padding_idx, data_loader,
-                 init_token, do_validation=False, lr_schedulers=None, len_epoch=2):
+                 init_token, lr_schedulers=None, len_epoch=2):
         super().__init__(models, criterion, metric_ftns, optimizers, config)
         self.model_idx = model_idx
         self.config = config
@@ -20,7 +20,7 @@ class Trainer(BaseMultiTrainer):
         self.batch_size = data_loader.batch_size
         self.vocab = data_loader.TEXT.vocab.itos
         self.len_epoch = len_epoch
-        self.do_validation = do_validation
+        self.do_validation = self.config['trainer']['do_validation']
         self.lr_schedulers = lr_schedulers
         self.clip = self.config['trainer']['clip']
         self.log_step = int(np.sqrt(data_loader.batch_size))
@@ -39,7 +39,8 @@ class Trainer(BaseMultiTrainer):
             self.models[idx].train()
 
         self.train_metrics.reset()
-        for batch_idx, data in enumerate(self.data_loader.train_iter):
+        batch_idx = 0
+        for data in self.data_loader.train_iter:
             talk, response = data.talk, data.response
             talk_seq, talk_seq_len = talk[0].to(self.device), talk[1].to(self.device)
             response_seq, response_seq_len = response[0].to(self.device), response[1].to(self.device)
@@ -62,7 +63,6 @@ class Trainer(BaseMultiTrainer):
             #     self.models[self.model_idx['decoder']].n_layers, -1, -1
             # )
             decoder_hidden = encoder_hidden[-self.models[self.model_idx['decoder']].n_layers:]
-
             decoder_outputs = []
             loss = torch.zeros(1)
             losses = []
@@ -104,11 +104,9 @@ class Trainer(BaseMultiTrainer):
                 for row in pred.T:
                     text = ' '.join([self.vocab[tok] for tok in row if tok != self.padding_idx])
                     self.writer.add_text('pred', text)
+            batch_idx += 1
 
-            if batch_idx == self.len_epoch:
-                break
         log = self.train_metrics.result()
-
         if self.do_validation:
             val_log = self._valid_epoch(epoch)
             log.update(**{'val_'+k: v for k, v in val_log.items()})
@@ -130,7 +128,8 @@ class Trainer(BaseMultiTrainer):
 
         self.valid_metrics.reset()
         with torch.no_grad():
-            for batch_idx, data in enumerate(self.data_loader.valid_iter):
+            batch_idx = 0
+            for data in self.data_loader.valid_iter:
                 talk, response = data.talk, data.response
                 talk_seq, talk_seq_len = talk[0].to(self.device), talk[1].to(self.device)
                 response_seq, response_seq_len = response[0].to(self.device), response[1].to(self.device)
@@ -157,14 +156,14 @@ class Trainer(BaseMultiTrainer):
                     losses += [mask_loss.item() * n_total]
                     n_totals += n_total
 
+                decoder_outputs = torch.stack(decoder_outputs, dim=0)
                 self.writer.set_step((epoch - 1) * len(self.data_loader.valid_iter.dataset) + batch_idx, 'valid')
-                self.valid_metrics.update('valid_loss', loss.item())
+                self.valid_metrics.update('loss', loss.item())
                 for met in self.metric_ftns:
                     self.valid_metrics.update(met.__name__, met(decoder_outputs, response_seq))
 
-                decoder_outputs = torch.stack(decoder_outputs, dim=0)
                 if batch_idx % self.log_step == 0:
-                    self.logger.debug('Train Epoch: {} {} Loss: {:.6f}'.format(
+                    self.logger.debug('Valid Epoch: {} {} Loss: {:.6f}'.format(
                         epoch,
                         self._progress(batch_idx),
                         loss.item()))
@@ -178,6 +177,7 @@ class Trainer(BaseMultiTrainer):
                     for row in pred.T:
                         text = ' '.join([self.vocab[tok] for tok in row if tok != self.padding_idx])
                         self.writer.add_text('pred', text)
+                batch_idx += 1
 
         # add histogram of model parameters to the tensorboard
         for model in self.models:

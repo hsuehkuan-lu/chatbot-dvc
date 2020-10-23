@@ -54,12 +54,12 @@ class ChatbotDataLoader(object):
         # split data
         if 1 > validation_split > 0:
             self.train, self.valid = self.dataset.split(split_ratio=1. - validation_split)
-            self.valid_iter = BucketIterator(self.valid, batch_size, sort_key=lambda x: len(x.text),
-                                             train=False, repeat=True)
+            self.valid_iter = BucketIterator(self.valid, batch_size, sort_key=lambda x: len(x.talk),
+                                             train=False, repeat=False)
         else:
             self.train = self.dataset
-        self.train_iter = BucketIterator(self.train, batch_size, sort_key=lambda x: len(x.text),
-                                         shuffle=shuffle, repeat=True)
+        self.train_iter = BucketIterator(self.train, batch_size, sort_key=lambda x: len(x.talk),
+                                         shuffle=shuffle, repeat=False)
 
     def _tokenizer(self, text):
         return [tok.text for tok in self.spacy_lang.tokenizer(text)]
