@@ -26,6 +26,8 @@ def main(config):
     
     # setup data_loader instances
     data_loader = config.init_obj('data_loader', module_data, save_dir=config.save_dir)
+    logger.info(f'Train data size: {len(data_loader.train_iter.dataset)}')
+    logger.info(f'Valid data size: {len(data_loader.valid_iter.dataset)}')
 
     # build model architecture, then print to console
     encoder = config.init_obj(
@@ -52,14 +54,15 @@ def main(config):
     metrics = [getattr(module_metric, met) for met in config['metrics']]
 
     # build optimizer, learning rate scheduler. delete every lines containing lr_scheduler for disabling scheduler
-    optimizers = []
-    lr_schedulers = []
-    for idx in range(len(models)):
-        trainable_params = filter(lambda p: p.requires_grad, models[idx].parameters())
-        optimizer = config.init_obj('optimizer', torch.optim, trainable_params)
-        lr_scheduler = config.init_obj('lr_scheduler', torch.optim.lr_scheduler, optimizer)
-        optimizers += [optimizer]
-        lr_schedulers += [lr_scheduler]
+    encoder_trainable_params = filter(lambda p: p.requires_grad, encoder.parameters())
+    encoder_optimizer = config.init_obj('encoder_optimizer', torch.optim, encoder_trainable_params)
+    encoder_lr_scheduler = config.init_obj('lr_scheduler', torch.optim.lr_scheduler, encoder_optimizer)
+
+    decoder_trainable_params = filter(lambda p: p.requires_grad, decoder.parameters())
+    decoder_optimizer = config.init_obj('decoder_optimizer', torch.optim, decoder_trainable_params)
+    decoder_lr_scheduler = config.init_obj('lr_scheduler', torch.optim.lr_scheduler, decoder_optimizer)
+    optimizers = [encoder_optimizer, decoder_optimizer]
+    lr_schedulers = [encoder_lr_scheduler, decoder_lr_scheduler]
 
     trainer = Trainer(model_idx, models, criterion, metrics, optimizers,
                       config=config,

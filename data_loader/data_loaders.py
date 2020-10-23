@@ -54,7 +54,7 @@ class ChatbotDataLoader(object):
         # split data
         if 1 > validation_split > 0:
             self.train, self.valid = self.dataset.split(split_ratio=1. - validation_split)
-            self.valid_iter = BucketIterator(self.dataset, batch_size, sort_key=lambda x: len(x.text),
+            self.valid_iter = BucketIterator(self.valid, batch_size, sort_key=lambda x: len(x.text),
                                              train=False, repeat=True)
         else:
             self.train = self.dataset

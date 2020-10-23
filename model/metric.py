@@ -18,3 +18,7 @@ def top_k_acc(output, target, k=3):
         for i in range(k):
             correct += torch.sum(pred[:, :, i] == target).item()
     return correct / len(target)
+
+
+def valid_loss():
+    pass

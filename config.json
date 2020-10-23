@@ -3,6 +3,7 @@
     "n_gpu": 1,
     "embed_size": 50,
     "hidden_size": 256,
+    "decoder_lr_ratio": 5.0,
 
     "encoder_arch": {
         "type": "ChatbotEncoder",
@@ -45,15 +46,21 @@
             "min_freq": 5,
             "shuffle": true,
             "validation_split": 0.1,
-            "debug": true
+            "debug": false
         }
     },
-    "optimizer": {
+    "encoder_optimizer": {
         "type": "Adam",
         "args":{
-            "lr": 0.0001,
-            "weight_decay": 0,
-            "amsgrad": true
+            "lr": 1e-4,
+            "weight_decay": 0
+        }
+    },
+    "decoder_optimizer": {
+        "type": "Adam",
+        "args":{
+            "lr": 5e-4,
+            "weight_decay": 0
         }
     },
     "loss": "mask_nll_loss",
@@ -68,11 +75,12 @@
         }
     },
     "trainer": {
-        "epochs": 10,
+        "epochs": 100,
 
         "save_dir": "saved/",
         "save_period": 1,
         "verbosity": 2,
+        "do_validation": true,
         
         "monitor": "min val_loss",
         "early_stop": 2,

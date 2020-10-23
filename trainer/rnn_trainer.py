@@ -134,22 +134,55 @@ class Trainer(BaseMultiTrainer):
                 talk, response = data.talk, data.response
                 talk_seq, talk_seq_len = talk[0].to(self.device), talk[1].to(self.device)
                 response_seq, response_seq_len = response[0].to(self.device), response[1].to(self.device)
+                mask = (response_seq != self.padding_idx)
+                mask = mask.to(self.device)
 
                 encoder_outputs, encoder_hidden = self.models[self.model_idx['encoder']](talk_seq, talk_seq_len)
                 decoder_input = torch.ones(1, encoder_outputs.size(1), dtype=torch.long) * self.init_token
                 decoder_input = decoder_input.to(self.device)
                 decoder_hidden = encoder_hidden[-self.models[self.model_idx['decoder']].n_layers:]
-                loss = self.criterion(output, target)
+
+                decoder_outputs = []
+                loss = torch.zeros(1)
+                losses = []
+                n_totals = torch.zeros(1)
+                for t in range(self.data_loader.sent_len):
+                    decoder_output, decoder_hidden = self.models[self.model_idx['decoder']](
+                        decoder_input, decoder_hidden, encoder_outputs
+                    )
+                    decoder_outputs += [decoder_output]
+                    decoder_input = response_seq[t:t+1]
+                    mask_loss, n_total = self.criterion(decoder_output, response_seq[t], mask[t])
+                    loss += mask_loss
+                    losses += [mask_loss.item() * n_total]
+                    n_totals += n_total
 
                 self.writer.set_step((epoch - 1) * len(self.data_loader.valid_iter.dataset) + batch_idx, 'valid')
-                self.valid_metrics.update('loss', loss.item())
+                self.valid_metrics.update('valid_loss', loss.item())
                 for met in self.metric_ftns:
-                    self.valid_metrics.update(met.__name__, met(output, target))
-                self.writer.add_image('input', make_grid(data.cpu(), nrow=8, normalize=True))
+                    self.valid_metrics.update(met.__name__, met(decoder_outputs, response_seq))
+
+                decoder_outputs = torch.stack(decoder_outputs, dim=0)
+                if batch_idx % self.log_step == 0:
+                    self.logger.debug('Train Epoch: {} {} Loss: {:.6f}'.format(
+                        epoch,
+                        self._progress(batch_idx),
+                        loss.item()))
+                    for row in talk_seq.T:
+                        text = ' '.join([self.vocab[tok] for tok in row if tok != self.padding_idx])
+                        self.writer.add_text('talk', text)
+                    for row in response_seq.T:
+                        text = ' '.join([self.vocab[tok] for tok in row if tok != self.padding_idx])
+                        self.writer.add_text('response', text)
+                    pred = torch.argmax(decoder_outputs, dim=-1)
+                    for row in pred.T:
+                        text = ' '.join([self.vocab[tok] for tok in row if tok != self.padding_idx])
+                        self.writer.add_text('pred', text)
 
         # add histogram of model parameters to the tensorboard
-        for name, p in self.model.named_parameters():
-            self.writer.add_histogram(name, p, bins='auto')
+        for model in self.models:
+            for name, p in model.named_parameters():
+                self.writer.add_histogram(name, p, bins='auto')
         return self.valid_metrics.result()
 
     def _progress(self, batch_idx):
