@@ -134,7 +134,6 @@ class Trainer(BaseMultiTrainer):
         with torch.no_grad():
             batch_idx = 0
             for data in self.data_loader.valid_iter:
-                data = data.to(self.device)
                 talk, response = data.talk, data.response
                 talk_seq, talk_seq_len = talk[0].to(self.device), talk[1].to(self.device)
                 response_seq, response_seq_len = response[0].to(self.device), response[1].to(self.device)
