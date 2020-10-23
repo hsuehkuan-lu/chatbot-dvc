@@ -1,15 +1,12 @@
 import torch
 import torch.nn.functional as F
 
-USE_CUDA = torch.cuda.is_available()
-device = torch.device("cuda" if USE_CUDA else "cpu")
-
 
 def nll_loss(output, target):
     return F.nll_loss(output, target)
 
 
-def mask_nll_loss(x, y, mask):
+def mask_nll_loss(x, y, mask, device):
     """
     x = [max_len, batch_size, vocab_size]
     y = [batch_size]
