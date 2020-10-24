@@ -41,6 +41,7 @@ class Trainer(BaseMultiTrainer):
         self.train_metrics.reset()
         batch_idx = 0
         for data in self.data_loader.train_iter:
+            self.logger.info(f'Train {batch_idx}')
             talk, response = data.talk, data.response
             talk_seq, talk_seq_len = talk[0].to(self.device), talk[1].to(self.device)
             response_seq, response_seq_len = response[0].to(self.device), response[1].to(self.device)
@@ -78,6 +79,7 @@ class Trainer(BaseMultiTrainer):
                 loss += mask_loss
                 losses += [mask_loss.item() * n_total]
                 n_totals += n_total
+                self.logger.info(losses)
 
             loss.backward()
             for idx in range(len(self.models)):
@@ -131,6 +133,7 @@ class Trainer(BaseMultiTrainer):
         with torch.no_grad():
             batch_idx = 0
             for data in self.data_loader.valid_iter:
+                self.logger.info(f'Valid {batch_idx}')
                 talk, response = data.talk, data.response
                 talk_seq, talk_seq_len = talk[0].to(self.device), talk[1].to(self.device)
                 response_seq, response_seq_len = response[0].to(self.device), response[1].to(self.device)
@@ -156,6 +159,7 @@ class Trainer(BaseMultiTrainer):
                     loss += mask_loss
                     losses += [mask_loss.item() * n_total]
                     n_totals += n_total
+                    self.logger.info(losses)
 
                 decoder_outputs = torch.stack(decoder_outputs, dim=0)
                 self.writer.set_step((epoch - 1) * len(self.data_loader.valid_iter.dataset) + batch_idx, 'valid')
