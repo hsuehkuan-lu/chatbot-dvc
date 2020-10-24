@@ -69,7 +69,7 @@ class Trainer(BaseMultiTrainer):
             loss = torch.zeros(1, device=self.device)
             losses = []
             n_totals = torch.zeros(1, device=self.device)
-            for t in range(self.data_loader.sent_len):
+            for t in range(response_seq_len.max()):
                 decoder_output, decoder_hidden = self.models[self.model_idx['decoder']](
                     decoder_input, decoder_hidden, encoder_outputs
                 )
@@ -148,7 +148,7 @@ class Trainer(BaseMultiTrainer):
                 loss = torch.zeros(1, device=self.device)
                 losses = []
                 n_totals = torch.zeros(1, device=self.device)
-                for t in range(self.data_loader.sent_len):
+                for t in range(response_seq_len.max()):
                     decoder_output, decoder_hidden = self.models[self.model_idx['decoder']](
                         decoder_input, decoder_hidden, encoder_outputs
                     )
