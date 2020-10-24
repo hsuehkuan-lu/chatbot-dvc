@@ -23,4 +23,5 @@ def mask_nll_loss(x, y, mask):
         logger.debug(mask)
         logger.debug(loss)
         logger.debug("---")
+        return 0, 0
     return loss, total.item()
