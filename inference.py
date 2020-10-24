@@ -9,7 +9,12 @@ def main(config):
     logger = config.get_logger('inference')
 
     # setup data_loader instances
-    data_loader = config.init_obj('inference_data_loader', module_data)
+    data_loader = config.init_obj(
+        'inference_data_loader',
+        module_data,
+        text_field_path=config.resume.parent / 'TEXT.Field',
+        vocab_path=config.resume.parent / 'TEXT.Vocab'
+    )
     logger.info('Load data loader')
 
     # build model architecture
@@ -42,7 +47,8 @@ def main(config):
     greedy_decoder = config.init_obj(
         'inference_arch', module_arch,
         encoder=encoder,
-        decoder=decoder
+        decoder=decoder,
+        init_idx=data_loader.init_idx
     )
     logger.info(greedy_decoder)
 
@@ -53,12 +59,12 @@ def main(config):
 
     with torch.no_grad():
         while True:
-            text = input("Input text:")
+            text = input("Input text: ")
             x, x_len = data_loader.preprocess(text)
             x, x_len = x.to(device), x_len.to(device)
             all_tokens, all_scores = greedy_decoder(x, x_len, data_loader.sent_len)
             converted_text = data_loader.convert_ids_to_text(all_tokens)
-            print(converted_text, all_scores)
+            print(converted_text)
 
 
 if __name__ == '__main__':

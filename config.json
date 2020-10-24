@@ -28,9 +28,7 @@
     },
     "inference_arch": {
         "type": "GreedySearchDecoder",
-        "args": {
-            "init_tok": "<init>"
-        }
+        "args": {}
     },
     "preprocess": {
         "type": "ChatbotDataPreprocess",
@@ -43,8 +41,6 @@
         "args":{
             "data_dir": "data/cornell movie-dialogs corpus",
             "filename": "formatted_movie_lines.csv",
-            "text_field_path": "/Users/hlu/Documents/Program/Git/chatbot/saved/field/TEXT.Field",
-            "vocab_path": "/Users/hlu/Documents/Program/Git/chatbot/saved/field/TEXT.vocab",
             "batch_size": 64,
             "sent_len": 32,
             "init_token": "<init>",
@@ -52,15 +48,12 @@
             "min_freq": 5,
             "shuffle": true,
             "validation_split": 0.1,
-            "debug": false
+            "debug": true
         }
     },
     "inference_data_loader": {
         "type": "InferenceChatbotDataLoader",
-        "args":{
-            "text_field_path": null,
-            "vocab_path": null
-        }
+        "args":{}
     },
     "encoder_optimizer": {
         "type": "Adam",

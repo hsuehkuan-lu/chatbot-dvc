@@ -28,7 +28,6 @@ def main(config):
     data_loader = config.init_obj('data_loader', module_data, save_dir=config.save_dir)
     logger.info(f'Train data size: {len(data_loader.train_iter.dataset)}')
     logger.info(f'Valid data size: {len(data_loader.valid_iter.dataset)}')
-
     # build model architecture, then print to console
     encoder = config.init_obj(
         'encoder_arch', module_arch,

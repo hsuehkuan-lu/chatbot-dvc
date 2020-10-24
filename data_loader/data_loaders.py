@@ -121,10 +121,12 @@ class InferenceChatbotDataLoader(object):
         # create text field
         self.TEXT = torch.load(text_field_path)
         self.TEXT.vocab = torch.load(vocab_path)
-        self.vocab = self.TEXT.stoi
+        self.vocab = self.TEXT.vocab.stoi
+        self.id2tok = self.TEXT.vocab.itos
         self.vocab_size = len(self.TEXT.vocab.itos)
         self.padding_idx = self.TEXT.vocab.stoi['<pad>']
-        self.init_tok = self.TEXT.vocab.stoi['<init>']
+        self.init_idx = self.TEXT.vocab.stoi['<init>']
+        self.end_idx = self.TEXT.vocab.stoi['<eos>']
         self.sent_len = self.TEXT.fix_length
 
     def preprocess(self, text):
@@ -136,9 +138,10 @@ class InferenceChatbotDataLoader(object):
         return x
 
     def convert_ids_to_text(self, ids):
-        text_list = []
-        for text in ids:
-            text_list += [' '.join(list(filter(
-                lambda x: x != self.padding_idx, text
-            ))[1:-1])]
-        return text_list
+        text = ids.T[0]
+        tokens = []
+        for tok in text[1:]:
+            if tok == self.end_idx:
+                break
+            tokens += [self.id2tok[tok]]
+        return ' '.join(tokens)
