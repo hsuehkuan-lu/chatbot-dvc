@@ -75,7 +75,7 @@ class Trainer(BaseMultiTrainer):
                 )
                 decoder_outputs += [decoder_output]
                 decoder_input = response_seq[t:t+1]
-                mask_loss, n_total = self.criterion(decoder_output, response_seq[t], mask[t], self.device)
+                mask_loss, n_total = self.criterion(decoder_output, response_seq[t], mask[t])
                 loss += mask_loss
                 losses += [mask_loss.item() * n_total]
                 n_totals += n_total
@@ -155,7 +155,7 @@ class Trainer(BaseMultiTrainer):
                     )
                     decoder_outputs += [decoder_output]
                     decoder_input = response_seq[t:t+1]
-                    mask_loss, n_total = self.criterion(decoder_output, response_seq[t], mask[t], self.device)
+                    mask_loss, n_total = self.criterion(decoder_output, response_seq[t], mask[t])
                     loss += mask_loss
                     losses += [mask_loss.item() * n_total]
                     n_totals += n_total
