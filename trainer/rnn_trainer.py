@@ -41,7 +41,6 @@ class Trainer(BaseMultiTrainer):
         self.train_metrics.reset()
         batch_idx = 0
         for data in self.data_loader.train_iter:
-            self.logger.info(f'Train {batch_idx}')
             talk, response = data.talk, data.response
             talk_seq, talk_seq_len = talk[0].to(self.device), talk[1].to(self.device)
             response_seq, response_seq_len = response[0].to(self.device), response[1].to(self.device)
@@ -132,7 +131,6 @@ class Trainer(BaseMultiTrainer):
         with torch.no_grad():
             batch_idx = 0
             for data in self.data_loader.valid_iter:
-                self.logger.info(f'Valid {batch_idx}')
                 talk, response = data.talk, data.response
                 talk_seq, talk_seq_len = talk[0].to(self.device), talk[1].to(self.device)
                 response_seq, response_seq_len = response[0].to(self.device), response[1].to(self.device)
