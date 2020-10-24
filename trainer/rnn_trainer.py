@@ -79,7 +79,8 @@ class Trainer(BaseMultiTrainer):
                 loss += mask_loss
                 losses += [mask_loss.item() * n_total]
                 n_totals += n_total
-                self.logger.info(losses)
+                if torch.isnan(mask_loss).any():
+                    self.logger.info(mask_loss)
 
             loss.backward()
             for idx in range(len(self.models)):
@@ -159,7 +160,8 @@ class Trainer(BaseMultiTrainer):
                     loss += mask_loss
                     losses += [mask_loss.item() * n_total]
                     n_totals += n_total
-                    self.logger.info(losses)
+                    if torch.isnan(mask_loss).any():
+                        self.logger.info(mask_loss)
 
                 decoder_outputs = torch.stack(decoder_outputs, dim=0)
                 self.writer.set_step((epoch - 1) * len(self.data_loader.valid_iter.dataset) + batch_idx, 'valid')
