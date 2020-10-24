@@ -111,3 +111,34 @@ class ChatbotDataLoader(object):
         else:
             self.TEXT.build_vocab(self.dataset, min_freq=min_freq)
         torch.save(self.TEXT.vocab, os.path.join(save_dir, 'TEXT.Vocab'))
+
+
+class InferenceChatbotDataLoader(object):
+    """
+    Inference Chatbot data loading
+    """
+    def __init__(self, text_field_path, vocab_path):
+        # create text field
+        self.TEXT = torch.load(text_field_path)
+        self.TEXT.vocab = torch.load(vocab_path)
+        self.vocab = self.TEXT.stoi
+        self.vocab_size = len(self.TEXT.vocab.itos)
+        self.padding_idx = self.TEXT.vocab.stoi['<pad>']
+        self.init_tok = self.TEXT.vocab.stoi['<init>']
+        self.sent_len = self.TEXT.fix_length
+
+    def preprocess(self, text):
+        if isinstance(text, str):
+            text = [text]
+        x = self.TEXT.preprocess(text)
+        x = self.TEXT.pad(x)
+        x = self.TEXT.numericalize(x)
+        return x
+
+    def convert_ids_to_text(self, ids):
+        text_list = []
+        for text in ids:
+            text_list += [' '.join(list(filter(
+                lambda x: x != self.padding_idx, text
+            ))[1:-1])]
+        return text_list

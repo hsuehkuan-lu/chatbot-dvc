@@ -26,6 +26,12 @@
             "dropout": 0.1
         }
     },
+    "inference_arch": {
+        "type": "GreedySearchDecoder",
+        "args": {
+            "init_tok": "<init>"
+        }
+    },
     "preprocess": {
         "type": "ChatbotDataPreprocess",
         "args": {
@@ -47,6 +53,13 @@
             "shuffle": true,
             "validation_split": 0.1,
             "debug": false
+        }
+    },
+    "inference_data_loader": {
+        "type": "InferenceChatbotDataLoader",
+        "args":{
+            "text_field_path": null,
+            "vocab_path": null
         }
     },
     "encoder_optimizer": {

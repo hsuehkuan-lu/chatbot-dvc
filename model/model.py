@@ -142,16 +142,16 @@ class LuongAttnDecoderRNN(BaseModel):
 
 
 class GreedySearchDecoder(BaseModel):
-    def __init__(self, encoder, decoder, init_tok):
+    def __init__(self, encoder, decoder, init_idx):
         super(GreedySearchDecoder, self).__init__()
         self.encoder = encoder
         self.decoder = decoder
-        self.init_tok = init_tok
+        self.init_idx = init_idx
 
     def forward(self, talk_seq, talk_seq_len, sent_len):
         encoder_outputs, encoder_hidden = self.encoder(talk_seq, talk_seq_len)
         decoder_hidden = encoder_hidden[-self.decoder.n_layers:]
-        decoder_input = torch.ones(1, 1, dtype=torch.long) * self.init_tok
+        decoder_input = torch.ones(1, 1, dtype=torch.long) * self.init_idx
 
         all_tokens = []
         all_scores = []
