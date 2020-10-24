@@ -17,11 +17,11 @@ def mask_nll_loss(x, y, mask):
     total = mask.sum()
     cross_entropy = -torch.log(torch.gather(x, dim=1, index=y.view(-1, 1)).squeeze(1))
     loss = cross_entropy.masked_select(mask).mean()
-    # if torch.isnan(loss).any():
-    #     logger.debug(x)
-    #     logger.debug(y)
-    #     logger.debug(mask)
-    #     logger.debug(loss)
-    #     logger.debug("---")
-    #     return torch.zeros(1), torch.zeros(1)
+    if torch.isnan(loss).any():
+        logger.debug(x)
+        logger.debug(y)
+        logger.debug(mask)
+        logger.debug(loss)
+        logger.debug("---")
+        return torch.zeros(1), torch.zeros(1)
     return loss, total.item()
