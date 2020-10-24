@@ -183,9 +183,9 @@ class Trainer(BaseMultiTrainer):
                 batch_idx += 1
 
         # add histogram of model parameters to the tensorboard
-        for model in self.models:
-            for name, p in model.named_parameters():
-                self.writer.add_histogram(name, p, bins='auto')
+        # for model in self.models:
+        #     for name, p in model.named_parameters():
+        #         self.writer.add_histogram(name, p, bins='auto')
         return self.valid_metrics.result()
 
     def _progress(self, batch_idx):
