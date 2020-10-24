@@ -53,15 +53,15 @@ def main(config):
     logger.info(greedy_decoder)
 
     # prepare model for testing
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    greedy_decoder = greedy_decoder.to(device)
+    # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    # greedy_decoder = greedy_decoder.to(device)
     greedy_decoder.eval()
 
     with torch.no_grad():
         while True:
             text = input("Input text: ")
             x, x_len = data_loader.preprocess(text)
-            x, x_len = x.to(device), x_len.to(device)
+            # x, x_len = x.to(device), x_len.to(device)
             all_tokens, all_scores = greedy_decoder(x, x_len, data_loader.sent_len)
             converted_text = data_loader.convert_ids_to_text(all_tokens)
             print(converted_text)
