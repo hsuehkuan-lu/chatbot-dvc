@@ -66,7 +66,7 @@ def main(config):
             # x, x_len = x.to(device), x_len.to(device)
             all_tokens, all_scores = greedy_decoder(x, x_len, data_loader.sent_len)
             converted_text = data_loader.convert_ids_to_text(all_tokens)
-            print(all_scores)
+            print(all_scores.T[0])
             print(converted_text)
 
 
