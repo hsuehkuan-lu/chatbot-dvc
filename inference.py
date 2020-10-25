@@ -40,7 +40,7 @@ def main(config):
     models = [encoder, decoder]
 
     logger.info('Loading checkpoint: {} ...'.format(config.resume))
-    checkpoint = torch.load(config.resume)
+    checkpoint = torch.load(config.resume, map_location=torch.device('cpu'))
     for idx in range(len(models)):
         models[idx].load_state_dict(
             checkpoint['{}_state_dict'.format(type(models[idx]).__name__)]

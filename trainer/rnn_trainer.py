@@ -43,7 +43,9 @@ class Trainer(BaseMultiTrainer):
         for data in self.data_loader.train_iter:
             talk, response = data.talk, data.response
             talk_seq, talk_seq_len = talk[0].to(self.device), talk[1].to(self.device)
-            response_seq, response_seq_len = response[0].to(self.device), response[1].to(self.device)
+            response_seq, response_seq_len = torch.zeros_like(response[0]), response[1] - 1
+            response_seq[:, 0:-1] += response[0][:, 1:]
+            response_seq, response_seq_len = response_seq.to(self.device), response_seq_len.to(self.device)
             # mask is TARGET mask
             mask = (response_seq != self.padding_idx)
             mask = mask.to(self.device)
@@ -133,7 +135,9 @@ class Trainer(BaseMultiTrainer):
             for data in self.data_loader.valid_iter:
                 talk, response = data.talk, data.response
                 talk_seq, talk_seq_len = talk[0].to(self.device), talk[1].to(self.device)
-                response_seq, response_seq_len = response[0].to(self.device), response[1].to(self.device)
+                response_seq, response_seq_len = torch.zeros_like(response[0]), response[1] - 1
+                response_seq[:, 0:-1] += response[0][:, 1:]
+                response_seq, response_seq_len = response_seq.to(self.device), response_seq_len.to(self.device)
                 mask = (response_seq != self.padding_idx)
                 mask = mask.to(self.device)
 
