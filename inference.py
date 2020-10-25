@@ -25,6 +25,7 @@ def main(config):
         hidden_size=config['hidden_size'],
         embed_size=config['embed_size']
     )
+    encoder.eval()
     logger.info(encoder)
     decoder = config.init_obj(
         'decoder_arch', module_arch,
@@ -33,12 +34,13 @@ def main(config):
         hidden_size=config['hidden_size'],
         vocab_size=data_loader.vocab_size
     )
+    decoder.eval()
     logger.info(decoder)
     model_idx = dict([('encoder', 0), ('decoder', 1)])
     models = [encoder, decoder]
 
     logger.info('Loading checkpoint: {} ...'.format(config.resume))
-    checkpoint = torch.load(config.resume)
+    checkpoint = torch.load(config.resume, map_location=torch.device('cpu'))
     for idx in range(len(models)):
         models[idx].load_state_dict(
             checkpoint['{}_state_dict'.format(type(models[idx]).__name__)]
@@ -55,7 +57,7 @@ def main(config):
     # prepare model for testing
     # device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     # greedy_decoder = greedy_decoder.to(device)
-    greedy_decoder.eval()
+    # greedy_decoder.eval()
 
     with torch.no_grad():
         while True:
@@ -64,6 +66,7 @@ def main(config):
             # x, x_len = x.to(device), x_len.to(device)
             all_tokens, all_scores = greedy_decoder(x, x_len, data_loader.sent_len)
             converted_text = data_loader.convert_ids_to_text(all_tokens)
+            print(all_scores.T[0])
             print(converted_text)
 
 
