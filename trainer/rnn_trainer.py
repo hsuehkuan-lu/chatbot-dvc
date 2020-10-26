@@ -42,10 +42,12 @@ class Trainer(BaseMultiTrainer):
         batch_idx = 0
         for data in self.data_loader.train_iter:
             talk, response = data.talk, data.response
-            talk_seq, talk_seq_len = talk[0].to(self.device), talk[1].to(self.device)
+            x = talk[0].to(self.device)
+            talk_seq, talk_seq_len = torch.zeros_like(x, device=self.device), talk[1].to(self.device) - 1
+            talk_seq[0:-1] = x[1:]
             y = response[0].to(self.device)
             response_seq, response_seq_len = torch.zeros_like(y, device=self.device), response[1].to(self.device) - 1
-            response_seq[:, 0:-1] += y[:, 1:]
+            response_seq[0:-1] = y[1:]
             # mask is TARGET mask
             mask = (response_seq != self.padding_idx)
             mask = mask.to(self.device)
@@ -134,11 +136,13 @@ class Trainer(BaseMultiTrainer):
             batch_idx = 0
             for data in self.data_loader.valid_iter:
                 talk, response = data.talk, data.response
-                talk_seq, talk_seq_len = talk[0].to(self.device), talk[1].to(self.device)
+                x = talk[0].to(self.device)
+                talk_seq, talk_seq_len = torch.zeros_like(x, device=self.device), talk[1].to(self.device) - 1
+                talk_seq[0:-1] = x[1:]
                 y = response[0].to(self.device)
-                response_seq, response_seq_len = torch.zeros_like(y, device=self.device), \
-                                                 response[1].to(self.device) - 1
-                response_seq[:, 0:-1] += y[:, 1:]
+                response_seq, response_seq_len = torch.zeros_like(y, device=self.device), response[1].to(
+                    self.device) - 1
+                response_seq[0:-1] = y[1:]
                 mask = (response_seq != self.padding_idx)
                 mask = mask.to(self.device)
 
