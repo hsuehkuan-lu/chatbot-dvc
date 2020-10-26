@@ -130,17 +130,20 @@ class InferenceChatbotDataLoader(object):
         self.sent_len = self.TEXT.fix_length
 
     def preprocess(self, text):
-        if isinstance(text, str):
-            text = [text]
+        # if isinstance(text, str):
+        #     text = [text]
         x = self.TEXT.preprocess(text)
-        x = self.TEXT.pad(x)
+        print(x)
+        x = self.TEXT.pad([x])
+        print(x)
         x = self.TEXT.numericalize(x)
+        print(x)
         return x
 
     def convert_ids_to_text(self, ids):
         text = ids.T[0]
         tokens = []
-        for tok in text[1:]:
+        for tok in text:
             if tok == self.end_idx:
                 break
             tokens += [self.id2tok[tok]]

@@ -162,7 +162,6 @@ class GreedySearchDecoder(BaseModel):
             decoder_output, decoder_hidden = self.decoder(
                 decoder_input, decoder_hidden, encoder_outputs
             )
-            print(decoder_input)
             decoder_scores, decoder_input = torch.max(decoder_output, dim=-1)
             all_tokens += [decoder_input]
             all_scores += [decoder_scores]

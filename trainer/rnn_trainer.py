@@ -9,6 +9,7 @@ class Trainer(BaseMultiTrainer):
     """
     Trainer class
     """
+
     def __init__(self, model_idx, models, criterion, metric_ftns, optimizers, config, padding_idx, data_loader,
                  init_token, lr_schedulers=None, len_epoch=2):
         super().__init__(models, criterion, metric_ftns, optimizers, config)
@@ -42,12 +43,17 @@ class Trainer(BaseMultiTrainer):
         batch_idx = 0
         for data in self.data_loader.train_iter:
             talk, response = data.talk, data.response
+            # x removes <init> token
             x = talk[0].to(self.device)
-            talk_seq, talk_seq_len = torch.zeros_like(x, device=self.device), talk[1].to(self.device) - 1
+            talk_seq = torch.ones_like(x, device=self.device) * self.padding_idx
+            talk_seq_len = talk[1].to(self.device) - 1
             talk_seq[0:-1] = x[1:]
+            # y removes <init> token
             y = response[0].to(self.device)
-            response_seq, response_seq_len = torch.zeros_like(y, device=self.device), response[1].to(self.device) - 1
+            response_seq = torch.ones_like(y, device=self.device) * self.padding_idx
+            response_seq_len = response[1].to(self.device) - 1
             response_seq[0:-1] = y[1:]
+
             # mask is TARGET mask
             mask = (response_seq != self.padding_idx)
             mask = mask.to(self.device)
@@ -77,7 +83,7 @@ class Trainer(BaseMultiTrainer):
                     decoder_input, decoder_hidden, encoder_outputs
                 )
                 decoder_outputs += [decoder_output]
-                decoder_input = response_seq[t:t+1]
+                decoder_input = response_seq[t:t + 1]
                 mask_loss, n_total = self.criterion(decoder_output, response_seq[t], mask[t])
                 loss += mask_loss
                 losses += [mask_loss.item() * n_total]
@@ -114,7 +120,7 @@ class Trainer(BaseMultiTrainer):
         log = self.train_metrics.result()
         if self.do_validation:
             val_log = self._valid_epoch(epoch)
-            log.update(**{'val_'+k: v for k, v in val_log.items()})
+            log.update(**{'val_' + k: v for k, v in val_log.items()})
 
         if self.lr_schedulers is not None:
             for lr_scheduler in self.lr_schedulers:
@@ -137,12 +143,15 @@ class Trainer(BaseMultiTrainer):
             for data in self.data_loader.valid_iter:
                 talk, response = data.talk, data.response
                 x = talk[0].to(self.device)
-                talk_seq, talk_seq_len = torch.zeros_like(x, device=self.device), talk[1].to(self.device) - 1
+                talk_seq = torch.ones_like(x, device=self.device) * self.padding_idx
+                talk_seq_len = talk[1].to(self.device) - 1
                 talk_seq[0:-1] = x[1:]
+
                 y = response[0].to(self.device)
-                response_seq, response_seq_len = torch.zeros_like(y, device=self.device), response[1].to(
-                    self.device) - 1
+                response_seq = torch.ones_like(y, device=self.device) * self.padding_idx
+                response_seq_len = response[1].to(self.device) - 1
                 response_seq[0:-1] = y[1:]
+
                 mask = (response_seq != self.padding_idx)
                 mask = mask.to(self.device)
 
@@ -160,7 +169,7 @@ class Trainer(BaseMultiTrainer):
                         decoder_input, decoder_hidden, encoder_outputs
                     )
                     decoder_outputs += [decoder_output]
-                    decoder_input = response_seq[t:t+1]
+                    decoder_input = response_seq[t:t + 1]
                     mask_loss, n_total = self.criterion(decoder_output, response_seq[t], mask[t])
                     loss += mask_loss
                     losses += [mask_loss.item() * n_total]
