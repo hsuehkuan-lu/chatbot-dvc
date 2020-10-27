@@ -133,11 +133,8 @@ class InferenceChatbotDataLoader(object):
         # if isinstance(text, str):
         #     text = [text]
         x = self.TEXT.preprocess(text)
-        print(x)
         x = self.TEXT.pad([x])
-        print(x)
         x = self.TEXT.numericalize(x)
-        print(x)
         return x
 
     def convert_ids_to_text(self, ids):

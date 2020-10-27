@@ -3,6 +3,7 @@ import torch
 import data_loader.data_loaders as module_data
 import model.model as module_arch
 from parse_config import ConfigParser
+from collections import namedtuple
 
 
 def main(config):
@@ -64,12 +65,13 @@ def main(config):
             text = input("Input text: ")
             x, x_len = data_loader.preprocess(text)
             # print(x)
-            talk_seq = torch.zeros_like(x)
+            talk_seq = torch.ones_like(x)
             talk_seq[0:-1], talk_seq_len = x[1:], x_len - 1
+            print(talk_seq, talk_seq_len)
             # x, x_len = x.to(device), x_len.to(device)
             all_tokens, all_scores = greedy_decoder(talk_seq, talk_seq_len, data_loader.sent_len)
             converted_text = data_loader.convert_ids_to_text(all_tokens)
-            # print(all_scores.T[0])
+            print(all_scores.T[0])
             print(converted_text)
 
 
