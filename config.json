@@ -39,9 +39,9 @@
     "data_loader": {
         "type": "ChatbotDataLoader",
         "args":{
-            "data_dir": "/data/cornell movie-dialogs corpus",
+            "data_dir": "data/cornell movie-dialogs corpus",
             "filename": "formatted_movie_lines.csv",
-            "sent_len": 32,
+            "sent_len": 16,
             "text_field_path": null,
             "vocab_path": null,
             "batch_size": 256,
@@ -50,7 +50,7 @@
             "min_freq": 5,
             "shuffle": true,
             "validation_split": 0.1,
-            "debug": false
+            "debug": true
         }
     },
     "inference_data_loader": {
@@ -60,7 +60,7 @@
     "encoder_optimizer": {
         "type": "Adam",
         "args":{
-            "lr": 1e-4,
+            "lr": 1e-5,
             "weight_decay": 0,
             "amsgrad": true
         }
@@ -68,7 +68,7 @@
     "decoder_optimizer": {
         "type": "Adam",
         "args":{
-            "lr": 5e-4,
+            "lr": 5e-5,
             "weight_decay": 0,
             "amsgrad": true
         }
@@ -87,7 +87,7 @@
     "trainer": {
         "epochs": 100,
 
-        "save_dir": "/data/chatbot/saved/",
+        "save_dir": "saved/",
         "save_period": 1,
         "verbosity": 2,
         "do_validation": true,
