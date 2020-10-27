@@ -35,7 +35,7 @@ class ChatbotEncoder(BaseModel):
         self.embed_size = embed_size
         self.dropout = dropout
         self.embedding = nn.Embedding(vocab_size, embed_size, padding_idx=padding_idx)
-        self.gru = nn.GRU(input_size=embed_size, hidden_size=hidden_size, num_layers=1,
+        self.gru = nn.GRU(input_size=embed_size, hidden_size=hidden_size, num_layers=n_layers,
                           bidirectional=True, dropout=dropout)
 
     def forward(self, input_seq, input_lengths, hidden=None):
