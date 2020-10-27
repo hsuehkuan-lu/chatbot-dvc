@@ -35,8 +35,10 @@ class ChatbotEncoder(BaseModel):
         self.embed_size = embed_size
         self.dropout = dropout
         self.embedding = nn.Embedding(vocab_size, embed_size, padding_idx=padding_idx)
-        self.gru = nn.GRU(input_size=embed_size, hidden_size=hidden_size, num_layers=n_layers,
-                          bidirectional=True, dropout=dropout)
+        # self.gru = nn.GRU(input_size=embed_size, hidden_size=hidden_size, num_layers=n_layers,
+        #                   bidirectional=True, dropout=dropout)
+        self.lstm = nn.LSTM(input_size=embed_size, hidden_size=hidden_size, num_layers=n_layers,
+                            bidirectional=True, dropout=dropout)
 
     def forward(self, input_seq, input_lengths, hidden=None):
         """
@@ -45,7 +47,8 @@ class ChatbotEncoder(BaseModel):
         """
         emb = self.embedding(input_seq)
         packed = nn.utils.rnn.pack_padded_sequence(emb, input_lengths, enforce_sorted=False)
-        outputs, hidden = self.gru(packed, hidden)
+        # outputs, hidden = self.gru(packed, hidden)
+        outputs, hidden = self.lstm(packed, hidden)
         outputs, _ = nn.utils.rnn.pad_packed_sequence(outputs)
         outputs = outputs[:, :, :self.hidden_size] + outputs[:, :, self.hidden_size:]
         # out = nn.Linear(2 * self.hidden_size, self.hidden_size)
@@ -105,7 +108,8 @@ class LuongAttnDecoderRNN(BaseModel):
         self.embedding = embedding
         self.embedding_dropout = nn.Dropout(dropout)
         self.embed_size = embed_size
-        self.gru = nn.GRU(embed_size, hidden_size, n_layers, dropout=dropout)
+        # self.gru = nn.GRU(embed_size, hidden_size, n_layers, dropout=dropout)
+        self.lstm = nn.LSTM(embed_size, hidden_size, n_layers, dropout=dropout)
         self.concat = nn.Linear(2 * hidden_size, hidden_size)
         self.out = nn.Linear(hidden_size, vocab_size)
 
@@ -123,7 +127,8 @@ class LuongAttnDecoderRNN(BaseModel):
         emb = self.embedding(input_step)
         emb = self.embedding_dropout(emb)
         # output = []
-        output, hidden = self.gru(emb, last_hidden)
+        # output, hidden = self.gru(emb, last_hidden)
+        output, hidden = self.lstm(emb, last_hidden)
         attn_weights = self.attn(output, encoder_outputs)
         # [batch_size, 1, max_length] * [batch_size, max_length, hidden_size]
         context = attn_weights.bmm(encoder_outputs.transpose(0, 1))
@@ -150,7 +155,9 @@ class GreedySearchDecoder(BaseModel):
 
     def forward(self, talk_seq, talk_seq_len, sent_len):
         encoder_outputs, encoder_hidden = self.encoder(talk_seq, talk_seq_len)
-        decoder_hidden = encoder_hidden[-self.decoder.n_layers:]
+        h, c = encoder_hidden[0][-self.decoder.n_layers:], encoder_hidden[1][-self.decoder.n_layers:]
+        # decoder_hidden = encoder_hidden[-self.decoder.n_layers:]
+        decoder_hidden = (h, c)
         decoder_input = torch.ones(1, 1, dtype=torch.long) * self.init_idx
 
         all_tokens = []

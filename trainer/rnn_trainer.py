@@ -72,7 +72,10 @@ class Trainer(BaseMultiTrainer):
             # decoder_hidden = encoder_hidden[-1].expand(
             #     self.models[self.model_idx['decoder']].n_layers, -1, -1
             # )
-            decoder_hidden = encoder_hidden[-self.models[self.model_idx['decoder']].n_layers:]
+            h = encoder_hidden[0][-self.models[self.model_idx['decoder']].n_layers:]
+            c = encoder_hidden[1][-self.models[self.model_idx['decoder']].n_layers:]
+            # decoder_hidden = encoder_hidden[-self.models[self.model_idx['decoder']].n_layers:]
+            decoder_hidden = (h, c)
             decoder_outputs = []
 
             loss = torch.zeros(1, device=self.device)
@@ -158,7 +161,10 @@ class Trainer(BaseMultiTrainer):
                 encoder_outputs, encoder_hidden = self.models[self.model_idx['encoder']](talk_seq, talk_seq_len)
                 decoder_input = torch.ones(1, encoder_outputs.size(1), dtype=torch.long) * self.init_token
                 decoder_input = decoder_input.to(self.device)
-                decoder_hidden = encoder_hidden[-self.models[self.model_idx['decoder']].n_layers:]
+                h = encoder_hidden[0][-self.models[self.model_idx['decoder']].n_layers:]
+                c = encoder_hidden[1][-self.models[self.model_idx['decoder']].n_layers:]
+                # decoder_hidden = encoder_hidden[-self.models[self.model_idx['decoder']].n_layers:]
+                decoder_hidden = (h, c)
 
                 decoder_outputs = []
                 loss = torch.zeros(1, device=self.device)
