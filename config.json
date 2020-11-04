@@ -42,7 +42,7 @@
         "args":{
             "data_dir": "/data/cornell movie-dialogs corpus",
             "filename": "formatted_movie_lines.csv",
-            "sent_len": 32,
+            "sent_len": 9,
             "text_field_path": null,
             "vocab_path": null,
             "batch_size": 256,
@@ -69,7 +69,7 @@
     "decoder_optimizer": {
         "type": "Adam",
         "args":{
-            "lr": 5e-4,
+            "lr": 3e-4,
             "weight_decay": 0,
             "amsgrad": true
         }
