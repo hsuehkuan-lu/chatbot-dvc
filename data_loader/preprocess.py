@@ -9,9 +9,10 @@ MOVIE_CONVERSATIONS_FIELDS = ["character1ID", "character2ID", "movieID", "uttera
 
 class ChatbotDataPreprocess:
     """Chatbot dataset."""
-    def __init__(self, data_dir):
+    def __init__(self, data_dir, sent_len):
         self.data_dir = data_dir
         self.delimiter = '\t'
+        self.sent_len = sent_len
         lines = self._load_lines()
         conversations = self._load_conversations(lines)
         self._dump_file(conversations)
@@ -48,8 +49,7 @@ class ChatbotDataPreprocess:
                 conversations.append(fields)
         return conversations
 
-    @staticmethod
-    def _extract_sentence_pairs(conversations):
+    def _extract_sentence_pairs(self, conversations):
         idx = 0
         qa_pairs = []
         for conversation_id, conversation in enumerate(conversations):
@@ -58,7 +58,10 @@ class ChatbotDataPreprocess:
                 input_line = conversation['lines'][i]['text'].strip()
                 target_line = conversation['lines'][i + 1]['text'].strip()
                 # Filter wrong samples (if one of the lists is empty)
-                if input_line and target_line:
+                len_input_line = len(input_line.split())
+                len_target_line = len(target_line.split())
+                if input_line and target_line and \
+                        len_input_line < self.sent_len and len_target_line < self.sent_len:
                     qa_pairs.append([idx, conversation_id, input_line, target_line])
                     idx += 1
         return qa_pairs

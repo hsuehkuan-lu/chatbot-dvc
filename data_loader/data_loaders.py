@@ -61,6 +61,12 @@ class ChatbotDataLoader(object):
         self.train_iter = BucketIterator(self.train, batch_size, sort_key=lambda x: len(x.talk),
                                          shuffle=shuffle, repeat=False)
 
+    def _preprocessing(self, text_arr):
+        pass
+
+    def _postprocessing(self, text_arr, vocab):
+        return list(filter(lambda x: len(x) < self.sent_len, text_arr))
+
     def _tokenizer(self, text):
         return [tok.text for tok in self.spacy_lang.tokenizer(text)]
 

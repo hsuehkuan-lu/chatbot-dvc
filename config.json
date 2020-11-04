@@ -4,6 +4,7 @@
     "embed_size": 50,
     "hidden_size": 512,
     "decoder_lr_ratio": 5.0,
+    "sent_len": 32,
 
     "encoder_arch": {
         "type": "ChatbotEncoder",
