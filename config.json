@@ -4,7 +4,7 @@
     "embed_size": 50,
     "hidden_size": 512,
     "decoder_lr_ratio": 5.0,
-    "sent_len": 32,
+    "sent_len": 16,
 
     "encoder_arch": {
         "type": "ChatbotEncoder",
@@ -34,7 +34,8 @@
     "preprocess": {
         "type": "ChatbotDataPreprocess",
         "args": {
-            "data_dir": "/data/cornell movie-dialogs corpus"
+            "data_dir": "/data/cornell movie-dialogs corpus",
+            "sent_len": 16
         }
     },
     "data_loader": {
