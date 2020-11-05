@@ -4,7 +4,6 @@
     "embed_size": 50,
     "hidden_size": 512,
     "decoder_lr_ratio": 5.0,
-    "sent_len": 16,
 
     "encoder_arch": {
         "type": "ChatbotEncoder",
@@ -35,7 +34,7 @@
         "type": "ChatbotDataPreprocess",
         "args": {
             "data_dir": "/data/cornell movie-dialogs corpus",
-            "sent_len": 16
+            "sent_len": 32
         }
     },
     "data_loader": {
@@ -43,7 +42,7 @@
         "args":{
             "data_dir": "/data/cornell movie-dialogs corpus",
             "filename": "formatted_movie_lines.csv",
-            "sent_len": 16,
+            "sent_len": 32,
             "text_field_path": null,
             "vocab_path": null,
             "batch_size": 256,
@@ -70,7 +69,7 @@
     "decoder_optimizer": {
         "type": "Adam",
         "args":{
-            "lr": 3e-4,
+            "lr": 5e-4,
             "weight_decay": 0,
             "amsgrad": true
         }

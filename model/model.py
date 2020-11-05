@@ -39,6 +39,7 @@ class ChatbotEncoder(BaseModel):
         #                   bidirectional=True, dropout=dropout)
         self.lstm = nn.LSTM(input_size=embed_size, hidden_size=hidden_size, num_layers=n_layers,
                             bidirectional=True, dropout=dropout)
+        nn.init.uniform_(self.embedding.weight, -1. / (embed_size ** 0.5), 1. / (embed_size ** 0.5))
 
     def forward(self, input_seq, input_lengths, hidden=None):
         """
@@ -67,7 +68,8 @@ class Attention(BaseModel):
             self.attn = nn.Linear(self.hidden_size, hidden_size)
         elif self.method == 'concat':
             self.attn = nn.Linear(2 * self.hidden_size, hidden_size)
-            self.v = nn.Parameter(torch.FloatTensor(hidden_size))
+            self.v = nn.Parameter(torch.empty(hidden_size))
+            nn.init.uniform_(self.v, -1. / (hidden_size ** 0.5), 1. / (hidden_size ** 0.5))
 
     def dot_score(self, hidden, encoder_output):
         return torch.sum(hidden * encoder_output, dim=-1)

@@ -2,6 +2,7 @@ import re
 import os
 import csv
 import codecs
+import unicodedata
 import torch
 from torchvision import datasets, transforms
 from base import BaseDataLoader
@@ -62,7 +63,13 @@ class ChatbotDataLoader(object):
                                          shuffle=shuffle, repeat=False)
 
     def _preprocessing(self, text_arr):
-        pass
+        tokens = []
+        text = unicodedata.normalize('NFC', ' '.join(text_arr)).strip()
+        for tok in text.split():
+            norm_tok = re.sub(r'[\W]', '', tok)
+            if norm_tok:
+                tokens += [norm_tok]
+        return tokens
 
     def _postprocessing(self, text_arr, vocab):
         return list(filter(lambda x: len(x) < self.sent_len, text_arr))
@@ -81,7 +88,8 @@ class ChatbotDataLoader(object):
                 fix_length=sent_len,
                 tokenize=self._tokenizer,
                 include_lengths=True,
-                lower=True
+                lower=True,
+                preprocessing=self._preprocessing
             )
         torch.save(text_field, os.path.join(save_dir, 'TEXT.Field'))
         return text_field
