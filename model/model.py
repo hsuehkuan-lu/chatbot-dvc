@@ -141,10 +141,11 @@ class LuongAttnDecoderRNN(BaseModel):
         # [batch_size, hidden_size]
         context = context.squeeze(1)
         concat_input = torch.cat((output, context), dim=-1)
-        concat_output = torch.tanh(self.concat(concat_input))
+        concat_output = torch.relu(self.concat(concat_input))
 
         output = self.out(concat_output)
         output = F.softmax(output, dim=-1)
+        # output_item = output.numpy()
         return output, hidden
 
 

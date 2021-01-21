@@ -33,14 +33,14 @@
     "preprocess": {
         "type": "ChatbotDataPreprocess",
         "args": {
-            "data_dir": "/data/cornell movie-dialogs corpus",
+            "data_dir": "data/cornell movie-dialogs corpus",
             "sent_len": 32
         }
     },
     "data_loader": {
         "type": "ChatbotDataLoader",
         "args":{
-            "data_dir": "/data/cornell movie-dialogs corpus",
+            "data_dir": "data/cornell movie-dialogs corpus",
             "filename": "formatted_movie_lines.csv",
             "sent_len": 32,
             "text_field_path": null,
@@ -88,7 +88,7 @@
     "trainer": {
         "epochs": 100,
 
-        "save_dir": "/data/chatbot/saved/",
+        "save_dir": "saved/",
         "save_period": 1,
         "verbosity": 2,
         "do_validation": true,
