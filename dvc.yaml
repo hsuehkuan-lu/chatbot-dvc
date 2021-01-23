@@ -1,0 +1,11 @@
+stages:
+  prepare:
+    cmd: python prepare.py
+    deps:
+    - data/cornell movie-dialogs corpus
+    - prepare.py
+    params:
+    - data_dir
+    - sent_len
+    outs:
+    - data/formatted_movie_lines.csv

@@ -1,0 +1,2 @@
+data_dir: "data/cornell movie-dialogs corpus"
+sent_len: 32

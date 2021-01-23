@@ -1,9 +1,14 @@
 import json
+import logging
 import pandas as pd
 from pathlib import Path
 from itertools import repeat
 from collections import OrderedDict
 
+def get_logger(name):
+    logger = logging.getLogger(name)
+    logger.setLevel(logging.INFO)
+    return logger
 
 def ensure_dir(dirname):
     dirname = Path(dirname)

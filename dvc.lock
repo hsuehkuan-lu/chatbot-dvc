@@ -1,0 +1,18 @@
+prepare:
+  cmd: python prepare.py
+  deps:
+  - path: data/cornell movie-dialogs corpus
+    md5: 713d55b85c3382dfd85440819e6b5813.dir
+    size: 219329939
+    nfiles: 21
+  - path: prepare.py
+    md5: b3d86c0ca3159f2177792529b1dbc0be
+    size: 595
+  params:
+    params.yaml:
+      data_dir: data/cornell movie-dialogs corpus
+      sent_len: 32
+  outs:
+  - path: data/formatted_movie_lines.csv
+    md5: 7356f0b97bfafaa297e8b6bcefb7f849
+    size: 20618570
