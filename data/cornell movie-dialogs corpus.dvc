@@ -1,0 +1,5 @@
+outs:
+- md5: 29882b8505931ff3cdbb2c6d7f996d2d.dir
+  size: 843619
+  nfiles: 20
+  path: cornell movie-dialogs corpus
